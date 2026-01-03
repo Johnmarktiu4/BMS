@@ -1,0 +1,26 @@
+sa map daw sir kailangan po yung brgy 3 lang daw nandun then sa pin po once clinick po makikita po yung info ng household number at yung member then head po ng family (DONE)
+
+
+dun sa module ng resident po dapat sa head of the family po magkakaron ng household number (DONE)
+
+
+sa certificate sa name po once sa search button po sa name mag popop daw po another window para lumabas po yung sinearch and mga names po
+
+The inventory should have both “Stock In” and “Stock Out” options under Manage Inventory. (DONE)
+
+When adding a new item, there should be no quantity received right away. A prompt should appear saying, (DONE)
+“Do you wish to stock in this item?” — only then should the Add Quantity option appear.(DONE)
+
+If another item with the same name is added, it should not create a new item entry. Instead, it should simply add to the stock in.(DONE)
+For example, if I want to add 10 units, I’ll just click Stock In to add those 10.(DONE)
+
+If someone borrows an item, the quantity should automatically decrease.(DONE)
+If an item is damaged or lost, that’s where the replace or replacement option should apply.(DONE)
+If the item will be paid for, a declared value should appear in the item data.(DONE)
+
+then magkakaron din po sya ng print report po (DONE)
+
+borrowed daw po if different sa inventory kaya po magkakaron ng seperate module ng inventory management yung borrowed (DONE)
+
+
+and then sa complain blotter incident sir bigay po ako ng ui ng merong info about dun po
