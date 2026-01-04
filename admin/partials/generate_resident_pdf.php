@@ -112,10 +112,12 @@ if ($is_single) {
     $html = '
     <table border="0" cellpadding="12">
         <tr>
-            <td width="28%" align="center" style="background:#f8f9fa;padding:20px;">
-                ' . $imgHtml . '<br><br>
-                <strong style="font-size:13pt;">' . htmlspecialchars($r['full_name']) . '</strong>
+            <td width="72%" style="background:#f8f9fa;padding:20px;font-size:11pt;">
+            <p><strong>Region : </strong><u>REGION IV-A</u>&nbsp;&nbsp;&nbsp;<strong>City/Municipality : </strong><u>Cavite City</u></p>
+            <p><strong>Province : </strong><u>CAVITE</u>&nbsp;&nbsp;&nbsp;<strong>Barangay : </strong><u>BARANGAY 3</u></p>
             </td>
+        </tr>
+        <tr>
             <td width="72%" style="background:#f8f9fa;padding:20px;font-size:11pt;">
                 <strong>Basic Information</strong><br>
                 Age: <strong>' . $r['age'] . '</strong> | 
