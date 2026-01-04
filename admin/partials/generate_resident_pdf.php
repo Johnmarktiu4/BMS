@@ -113,23 +113,15 @@ if ($is_single) {
     <table border="0" cellpadding="12">
         <tr>
             <td width="72%" style="background:#f8f9fa;padding:20px;font-size:11pt;">
-            <p><strong>Region : </strong><u>REGION IV-A</u>&nbsp;&nbsp;&nbsp;<strong>City/Municipality : </strong><u>Cavite City</u></p>
-            <p><strong>Province : </strong><u>CAVITE</u>&nbsp;&nbsp;&nbsp;<strong>Barangay : </strong><u>BARANGAY 3</u></p>
-            </td>
-        </tr>
-        <tr>
-            <td width="72%" style="background:#f8f9fa;padding:20px;font-size:11pt;">
-                <strong>Basic Information</strong><br>
-                Age: <strong>' . $r['age'] . '</strong> | 
-                Sex: <strong>' . $r['sex'] . '</strong> | 
-                Civil Status: <strong>' . $r['civil_status'] . '</strong><br><br>
-                Address: <strong>' . htmlspecialchars($r['address']) . '</strong>
+            <p><strong>Region : </strong><u>REGION IV-A</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>City/Municipality : </strong><u>Cavite City</u></p>
+            <p><strong>Province : </strong><u>CAVITE</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>Barangay : </strong><u>BARANGAY 3</u></p>
             </td>
         </tr>
     </table><br><br>';
 
     $html .= '
     <table border="1" cellpadding="10" cellspacing="0" style="font-size:10.5pt;">
+        <tr><td style="text-align: center;"><p><center><strong>PERSONAL INFORMATION</strong></center></p></td></tr>
         <tr><td width="35%"><strong>Date of Birth</strong></td><td>' . date('F j, Y', strtotime($r['date_of_birth'])) . '</td></tr>
         <tr><td><strong>Place of Birth</strong></td><td>' . htmlspecialchars($r['place_of_birth'] ?? '—') . '</td></tr>
         <tr><td><strong>Contact Number</strong></td><td>' . ($r['contact_number'] ?: '—') . '</td></tr>

@@ -73,6 +73,18 @@
                             </select>
                         </div>
                         <div class="col-md-2 col-sm-6">
+                            <label for="categoryAge" class="form-label">Age Category</label>
+                            <select class="form-select" id="categoryAge">
+                                <option value="">All</option>
+                                <option value="Infant">Infant (0-1)</option>
+                                <option value="Toddler">Toddler (1-3)</option>
+                                <option value="Minor">Minor (4-12)</option>
+                                <option value="Teen">Teen (13-19)</option>
+                                <option value="Adult">Adult (20-59)</option>
+                                <option value="Senior">Senior (60+)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 col-sm-6">
                             <label for="entriesSelect" class="form-label">Show</label>
                             <select class="form-select" id="entriesSelect">
                                 <option value="10">10</option>
@@ -1067,9 +1079,10 @@
         const sex = $('#sexFilter').val();
         const status = $('#statusFilter').val();
         const limit = $('#entriesSelect').val();
+        const ageSearch = $('#categoryAge').val();
         $.ajax({
             url: 'partials/resident_management_api.php',
-            data: { action: 'get_residents', search, sex, status, page, limit },
+            data: { action: 'get_residents', search, sex, status, page, limit, ageSearch },
             dataType: 'json',
             success: function(data) {
                 let tbody = '';
@@ -1130,6 +1143,7 @@
         $('#sexFilter').val('');
         $('#statusFilter').val('');
         $('#entriesSelect').val('10');
+        $('#categoryAge').val('');
         loadResidents(1);
     }
 
@@ -1188,7 +1202,7 @@
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => loadResidents(1), 500);
         });
-        $('#sexFilter, #statusFilter, #entriesSelect').on('change', () => loadResidents(1));
+        $('#sexFilter, #statusFilter, #entriesSelect, #categoryAge').on('change', () => loadResidents(1));
         $('#contactNumber, #emergencyContact').on('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length > 11) value = value.slice(0, 11);

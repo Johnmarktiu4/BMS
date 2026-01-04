@@ -18,6 +18,7 @@ switch ($action) {
         $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
         $sex = isset($_GET['sex']) ? $conn->real_escape_string($_GET['sex']) : '';
         $status = isset($_GET['status']) ? $conn->real_escape_string($_GET['status']) : '';
+        $ageSearch = isset($_GET['ageSearch']) ? $conn->real_escape_string($_GET['ageSearch']) : '';
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
         $offset = ($page - 1) * $limit;
@@ -32,6 +33,21 @@ switch ($action) {
         if ($status) {
             $registered = ($status == 'Yes') ? 1 : 0;
             $where .= " AND registered = $registered";
+        }
+        if ($ageSearch) {
+            if ($ageSearch == 'Infant') {
+                $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 0 AND 1";
+            } elseif ($ageSearch == 'Toddler') {
+                $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 1 AND 3";
+            } elseif ($ageSearch == 'Minor') {
+                $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 4 AND 12";
+            } elseif ($ageSearch == 'Teen') {
+                $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 13 AND 19";
+            } elseif ($ageSearch == 'Adult') {
+                $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 20 AND 59";
+            } elseif ($ageSearch == 'Senior') {
+                $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) >= 60";
+            }
         }
 
         $sql = "SELECT *, 
