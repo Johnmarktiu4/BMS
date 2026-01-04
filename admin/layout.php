@@ -210,7 +210,7 @@ $pagePath = "pages/$page.php";
                 <div class="menu-section"><h6>System</h6></div>
                 <?php if ($is_full_access || $is_kagawad): ?>
                     <a href="?page=system_logs" class="menu-item <?php echo $page=='system_logs'?'active':''; ?>">
-                        <i class="fas fa-history"></i> System Logs
+                        <i class="fas fa-history"></i> Audit Trail
                     </a>
                 <?php endif; ?>
                 <?php if ($is_full_access): ?>

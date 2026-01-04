@@ -113,8 +113,8 @@ if ($is_single) {
     <table border="0" cellpadding="12">
         <tr>
             <td width="72%" style="background:#f8f9fa;padding:20px;font-size:11pt;">
-            <p><strong>Region : </strong><u>REGION IV-A</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>City/Municipality : </strong><u>Cavite City</u></p>
-            <p><strong>Province : </strong><u>CAVITE</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>Barangay : </strong><u>BARANGAY 3</u></p>
+            <p><strong>Region : </strong><u>REGION IV-A</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>City/Municipality : </strong><u>Cavite City</u></p>
+            <p><strong>Province : </strong><u>CAVITE</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>Barangay : </strong><u>BARANGAY 3</u></p>
             </td>
         </tr>
     </table><br><br>';
@@ -136,6 +136,13 @@ if ($is_single) {
         <tr><td><strong>Relationship to Head</strong></td><td>' . ($r['relationship_to_head'] ?: 'Head of Family') . '</td></tr>
         <tr><td><strong>Emergency Contact</strong></td><td>' . ($r['emergency_name'] ? htmlspecialchars($r['emergency_name']) . ' (' . ($r['emergency_relationship'] ?: '—') . ') - ' . ($r['emergency_contact'] ?: '—') : '—') . '</td></tr>
     </table>';
+
+    $html .= '<p>I hereby certify that the above information is true and correct to the best of my knowledge. I understand<br>
+    that for the Barangay to carry out its mandate pursuant to Section 394 (d)(6) of the Local Government<br>
+    Code of 1991, they must necessarily process my personal information for easy identification of<br>
+    inhabitants, as a tool in planning, and as an updated reference in the number of inhabitants of the<br>
+    Barangay. Therefore, I grant my consent and recognize the authority of the Barangay to process my<br>
+    personal information, subject to the provision of the Philippine Data Privacy Act of 2012.</p>';
 
     $pdf->writeHTML($html, true, false, true, false, '');
 

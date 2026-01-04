@@ -440,7 +440,7 @@
             filtered.forEach(res => {
                 $dropdown.append(`
             <div class="px-3 py-2 border-bottom" style="cursor:pointer;"
-                 onclick="selectOfficialResident(${res.id}, '${res.full_name.replace(/'/g, "\\'")}')">
+                 onclick="selectOfficialResident(${res.id}, '${res.full_name.replace(/'/g, "\\'")}', '${res.contact_number || ''}')">
                 <strong>${res.full_name}</strong><br>
                 <small class="text-muted">Age: ${res.age} | ${res.sex} | ${res.house_number} ${res.street}</small>
             </div>
@@ -449,11 +449,12 @@
             $dropdown.show();
         }
 
-        function selectOfficialResident(id, name) {
+        function selectOfficialResident(id, name, contact) {
             $('#selectedOfficialId').val(id);
             $('#fullName').val(name);
             $('#officialResidentSearchInput').val(name);
             $('#selectedOfficialName').text(name);
+            $('#contact').val(contact);
             $('#officialResidentDropdown').hide();
         }
 

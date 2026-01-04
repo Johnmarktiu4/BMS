@@ -59,7 +59,7 @@ $stmt = $conn->prepare("
         } elseif (password_verify($password, $user['password'])) {
             // Login Success
             $_SESSION['user_id'] = $user['official_id'];
-            $_SESSION['user_type']   = 'official';
+            $_SESSION['user_type']   = $user['position'];
             $_SESSION['username']   = $user['username'];
             $_SESSION['full_name']   = $user['full_name'];
             $_SESSION['position']    = $user['position'];

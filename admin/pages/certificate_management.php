@@ -715,7 +715,7 @@
             <div class="signature-area">
                 <div class="applicant-signature"><div class="signature-line">Applicant Signature</div></div>
                 <div class="punong-signature">
-                    <div class="signature-line"><strong>Punong Barangay</strong><br><strong>Barangay 3</strong></div>
+                    <div class="signature-line"><strong>Barangay Official</strong><br><strong>Barangay 3</strong></div>
                 </div>
             </div>`;
             } else if (type === 'residency') {
@@ -746,7 +746,7 @@
                 <strong><u>${purpose}</u></strong>
             </p>
             <div class="punong-signature">
-                <div class="signature-line"><strong>Punong Barangay</strong></div>
+                <div class="signature-line"><strong>Barangay Official</strong></div>
             </div>
             <p class="validity-notice text-danger">
                 VALID FOR SIX (6) MONTHS ONLY/DON'T ACCEPT WITHOUT DRY SEAL
@@ -769,7 +769,7 @@
                 <strong><u>${month}</u></strong>, <strong>${year}</strong>
             </p>
             <div class="punong-signature">
-                <div class="signature-line"><strong>Punong Barangay</strong><br><strong>Barangay 3</strong></div>
+                <div class="signature-line"><strong>Barangay Official</strong><br><strong>Barangay 3</strong></div>
             </div>
             <p class="validity-notice text-primary" style="margin-top:30px;">
                 VALID FOR SIX (6) MONTHS ONLY/DON'T ACCEPT WITHOUT DRY SEAL

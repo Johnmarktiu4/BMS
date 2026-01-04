@@ -9,7 +9,7 @@ if (!$conn) {
     exit;
 }
 
-$sql = "SELECT id, full_name, first_name, last_name, age, sex, date_of_birth, civil_status, house_number, street, province, municipality, zip_code FROM residents WHERE archived = 0  AND date_of_birth <= DATE_SUB(CURDATE(), INTERVAL 18 YEAR) ORDER BY full_name";
+$sql = "SELECT id, full_name, first_name, last_name, age, sex, date_of_birth, civil_status, house_number, street, province, municipality, zip_code, contact_number FROM residents WHERE archived = 0  AND date_of_birth <= DATE_SUB(CURDATE(), INTERVAL 18 YEAR) ORDER BY full_name";
 $result = $conn->query($sql);
 $residents = [];
 while ($row = $result->fetch_assoc()) {

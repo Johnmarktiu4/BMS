@@ -1,5 +1,5 @@
 <?php
-if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
+if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] === 'admin' || $_SESSION['user_type'] === 'Barangay Captain') {
     header("Location: ?page=dashboard");
     exit();
 }
