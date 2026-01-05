@@ -856,9 +856,18 @@
                     'Unresolved': 'bg-warning',
                     'Forwarded to Police': 'bg-danger'
                 } [b.status] || 'bg-secondary';
+                let pandaya = 0;
                 let hearingCount = parseInt(b.hearing_count || 0);
                                 const lastRecorded = parseInt(b.last_hearing_recorded || 0);
-                const canRecord = hearingCount > lastRecorded;
+                const canRecord = hearingCount >= lastRecorded;
+                if (hearingCount === 2)
+                {
+                    pandaya = 2;
+                }
+                if (hearingCount === 3)
+                {
+                    pandaya = 3;
+                }
                 hearingCount = parseInt(b.hearing_count - 1 || 0);
                 const canSchedule = b.status !== 'Resolved' && hearingCount < 3;
 
@@ -880,6 +889,12 @@
                 }
                 if (hearingCount === 1){
                     summon = true;
+                }
+                if (pandaya === 2){
+                    hearingCount = hearingCount + 1;
+                }
+                if (pandaya === 3){
+                    hearingCount = 3;
                 }
                 console.log(hearingCount);
                 console.log('can', canRecordStart);
@@ -1073,7 +1088,9 @@
                 $('#record_hearing_incharge').val(h.barangay_incharge_id || '');
                 $('#discussion_summary').val(h.discussion_summary || '');
                 $('#hearing_outcome').val(h.outcome || 'Unresolved');
-                console.log('Hearing outcome:', hearingNumber);
+                console.log('Hearing number:', hearingNumber);
+                console.log('Hearing id:', h.id);
+                console.log('Blotter id:', blotterId);
                 const dateHearing = document.getElementById('record_hearing_date_div');
                 const timeHearing = document.getElementById('record_hearing_time_div');
                 if (hearingNumber === 3) {
@@ -1133,6 +1150,7 @@
                 return alert('Please fill Date, Time, and Incharge.');
             }
             const formData = new FormData();
+            console.log($('#recordHearingId').val());
             formData.append('action', 'record_hearing');
             formData.append('hearing_id', $('#recordHearingId').val());
             formData.append('blotter_id', $('#recordBlotterId').val());

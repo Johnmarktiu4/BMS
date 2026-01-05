@@ -78,8 +78,7 @@ switch ($action) {
             $idB = $row["id"];
             $count = $row["hearing_count"];
             
-            if ($count == 0) {
-                $count = $count + 1;
+            if ($count == 1) {
                 $stmt2 = $conn->prepare("INSERT INTO blotter_hearings 
                     (blotter_id, hearing_number, hearing_date, hearing_time, barangay_incharge_id) 
                     VALUES (?, ?, ?, ?, ?)");
@@ -203,36 +202,27 @@ switch ($action) {
         $nexthearingSchedule = $_POST['nexthearingSchedule'] ?? null;
         $nexthearingTimeSchedule = $_POST['nexthearingTimeSchedule'] ?? null;
         $incharge = $_POST['barangay_incharge_id'] ?? 0;
+        $today = date('Y-m-d');
+        $currentTime = date("H:i");
 
         $conn->begin_transaction();
         try {
             if ($hearing_id) {
-                $stmt = $conn->prepare("UPDATE blotter_hearings SET attendees = ?, discussion_summary = ?, outcome = ? WHERE id = ?");
-                $stmt->bind_param("sssi", $attendees, $summary, $outcome, $hearing_id);
-            } else {
-                $stmt_count = $conn->prepare("SELECT hearing_count FROM blotters WHERE id = ?");
-                $stmt_count->bind_param("i", $blotter_id);
-                $stmt_count->execute();
-                $hearing_number = $stmt_count->get_result()->fetch_assoc()['hearing_count'];
-                $stmt_count->close();
-
-                $stmt = $conn->prepare("INSERT INTO blotter_hearings 
-                    (blotter_id, hearing_number, attendees, discussion_summary, outcome) 
-                    VALUES (?, ?, ?, ?, ?)");
-                $stmt->bind_param("iisss", $blotter_id, $hearing_number, $attendees, $summary, $outcome);
-            }
+                $stmt = $conn->prepare("UPDATE blotter_hearings SET attendees = ?, discussion_summary = ?, outcome = ?, hearing_date = ?, hearing_time = ?  WHERE id = ?");
+                $stmt->bind_param("sssiss", $attendees, $summary, $outcome, $today, $currentTime, $hearing_id);
+            } 
             $stmt->execute();
             $stmt->close();
 
             $conn->query("UPDATE blotters SET hearing_count = hearing_count + 1 WHERE id = $blotter_id");
+            $conn->commit();
 
             $stmt_count = $conn->prepare("SELECT hearing_count FROM blotters WHERE id = ?");
                 $stmt_count->bind_param("i", $blotter_id);
                 $stmt_count->execute();
                 $hearing_number = $stmt_count->get_result()->fetch_assoc()['hearing_count'];
                 $stmt_count->close();
-                $hearing_number = $hearing_number + 1;
-            if ($hearing_number < 3) {
+            if ($hearing_number <= 3) {
                 $stmt2 = $conn->prepare("INSERT INTO blotter_hearings 
                     (blotter_id, hearing_number, hearing_date, hearing_time, barangay_incharge_id) 
                     VALUES (?, ?, ?, ?, ?)");
