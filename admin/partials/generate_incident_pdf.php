@@ -159,10 +159,10 @@ foreach ($incidents as $i) {
     $pdf->MultiCell(45, $rowHeight, $official, 1, 'L', true, 0);
     $pdf->Cell(35, $rowHeight, $date, 1, 1, 'C', true);
 }
-// === ADDED: PREPARED BY (appears after all table data) ===
+// === ADDED: Prepared By (appears after all table data) ===
 $pdf->Ln(15);
 $pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(0, 10, 'PREPARED BY : MARIO MOJICA', 0, 1, 'R');
+$pdf->Cell(0, 10, 'Prepared By : MARIO MOJICA', 0, 1, 'R');
 // ===================================================================
 // OUTPUT PDF
 // ===================================================================

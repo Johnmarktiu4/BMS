@@ -175,10 +175,10 @@ function generateResidentHTML($r, $full = false) {
         ' . ($full ? '<tr><td><strong>Relationship to Head</strong></td><td>' . ($r['relationship_to_head'] ?? 'Head of Family') . '</td></tr>' : '') . '
     </table>';
 }
-// === ADDED: PREPARED BY (appears after all table data) ===
+// === ADDED: Prepared By (appears after all table data) ===
 $pdf->Ln(15);
 $pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(0, 10, 'PREPARED BY : ' . $official_fullname, 0, 1, 'R');
+$pdf->Cell(0, 10, 'Prepared By : ' . $official_fullname, 0, 1, 'R');
 // ===================================================================
 // OUTPUT
 // ===================================================================

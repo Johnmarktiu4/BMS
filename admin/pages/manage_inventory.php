@@ -122,9 +122,14 @@ require_once 'partials/db_conn.php';
                 </div>
                 <div class="modal-body p-4">
                     <form id="stockInForm">
+                        <div class="mb-3 position-relative">
+                            <label class="form-label fw-bold">Search Items</label>
+                            <input type="text" class="form-control form-control-lg" id="itemSearchInput" placeholder="Type item name to add..." autocomplete="off">
+                            <div id="itemSearchDropdown" class="shadow border rounded position-absolute top-100 start-0 w-100" style="z-index: 2000; max-height: 300px; overflow-y: auto; display: none; background: white;"></div>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Select Item *</label>
-                            <select class="form-select" id="stockInItemSelect" onchange="isWithExpiration()" required></select>
+                            <input type="text" class="form-control" id="itemmss" name="itemmss" disabled>
                         </div>
                         <div class="mb-3">
                             <label for="acquisitionType" class="form-label">Acquisition Type *</label>
@@ -208,9 +213,14 @@ require_once 'partials/db_conn.php';
                 </div>
                 <div class="modal-body p-4">
                     <form id="stockOutForm">
+                        <div class="mb-3 position-relative">
+                            <label class="form-label fw-bold">Search Items</label>
+                            <input type="text" class="form-control form-control-lg" id="itemSearchInput2" placeholder="Type item name to add..." autocomplete="off">
+                            <div id="itemSearchDropdown2" class="shadow border rounded position-absolute top-100 start-0 w-100" style="z-index: 2000; max-height: 300px; overflow-y: auto; display: none; background: white;"></div>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Select Item *</label>
-                            <select class="form-select" id="stockOutItemSelect" onchange="selectExpirationDate()" required></select>
+                            <input type="text" class="form-control" id="itemmssOut" name="itemmssOut" disabled>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Action Type *</label>
@@ -253,6 +263,7 @@ require_once 'partials/db_conn.php';
     // Set the value of the input
     document.getElementById('expiration_date').value = today;
     let currentPage = 1;
+    let inventory = [], selectedItems = [];
 function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
@@ -278,15 +289,46 @@ function loadStockMonitoring() {
     });
 }
 
-function loadStockInOutMonitoring(page) {
+function loadInventory() {
+    $.post('partials/inventory_management_api.php', { action: 'fetch_inventory', limit: 999 }, function(r) {
+        if (r.status === 'success') {
+            inventory = r.data.items.filter(i => parseInt(i.current_stock) > 0);
+        }
+    }, 'json');
+}
+
+function loadStockInOutMonitoring(page, search = 0) {
     currentPage = page;
+    console.log('ss', search);
     $.ajax({
         url: 'partials/inventory_management_api.php',
         type: 'POST',
-        data: { action: 'fetch_stock_in_out_monitoring', page, limit: 10 },
+        data: { action: 'fetch_stock_in_out_monitoring', page, search, limit: 10 },
         dataType: 'json',
         success: function(response) {
             if (response.status === 'success') {
+                console.log('ss', search);
+                console.log(response.data);
+                stockInOutMonitoringTable(response.data, currentPage, response.total);
+            } else {
+                showAlert('danger', response.message || 'Failed to load stock movement.');
+            }
+        }
+    });
+}
+
+function loadStockInOutMonitoring2(search) {
+    currentPage = 1;
+    console.log('ss', search);
+    $.ajax({
+        url: 'partials/inventory_management_api.php',
+        type: 'POST',
+        data: { action: 'fetch_stock_in_out_monitoring2', search, limit: 10 },
+        dataType: 'json',
+        success: function(response) {
+            if (response.status === 'success') {
+                console.log('ss', search);
+                console.log(response.data);
                 stockInOutMonitoringTable(response.data, currentPage, response.total);
             } else {
                 showAlert('danger', response.message || 'Failed to load stock movement.');
@@ -331,7 +373,7 @@ function getQuantity(){
 }
 
 function selectExpirationDate(){
-    const item_id = $('#stockOutItemSelect').val();
+    const item_id = selectedItems[0].id;
     $.post('partials/inventory_management_api.php', {
         action: 'get_expiration_dates',
         item_id: item_id
@@ -352,7 +394,8 @@ function selectExpirationDate(){
 }
 
 function isWithExpiration() {
-    const item_id = $('#stockInItemSelect').val();
+    const item_id = selectedItems[0].id;
+    console.log(item_id);
     $.post('partials/inventory_management_api.php', {
         action: 'is_with_expiration',
         item_id: item_id
@@ -417,7 +460,9 @@ function updateStockMonitoringTable(items) {
                 <td class="text-center">${unitValue > 0 ? '₱' + unitValue.toFixed(2) : '—'}</td>
                 <td>${item.remarks || '—'}</td>
                 <td class="text-center">
-
+                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#stockMonitoringModal" onclick="loadStockInOutMonitoring2(${item.id})" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
                     <button class="btn btn-sm btn-outline-primary me-1" onclick="editItem(${item.id})" title="Edit">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -431,6 +476,7 @@ function updateStockMonitoringTable(items) {
 }
 
 function stockInOutMonitoringTable(items, page, total) {
+    console.log(items);
     let tbody = '';
     
     if (!items.length) {
@@ -508,7 +554,7 @@ function saveItem(proceedToStock = false) {
 }
 
 function performStockIn() {
-    const itemId = $('#stockInItemSelect').val();
+    const itemId = selectedItems[0].id;
     const qty = $('[name=quantity]', '#stockInForm').val();
     if (!itemId || !qty) return showAlert('warning', 'Please fill all required fields');
 
@@ -534,7 +580,7 @@ function performStockIn() {
 }
 
 function performStockOut() {
-    const itemId = $('#stockOutItemSelect').val();
+    const itemId = selectedItems[0].id;
     const qty = $('[name=quantity]', '#stockOutForm').val();
     const action = $('[name=action_type]', '#stockOutForm').val();
     if (!itemId || !qty) return showAlert('warning', 'Please fill all required fields');
@@ -604,9 +650,85 @@ function archiveItem(id) {
     }, 'json');
 }
 
+    function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
+}
+
+function addItemToBorrow(id, name, stock) {
+    if (selectedItems.find(x => x.id == id)) {
+        alert('Item already added!');
+        return;
+    }
+    selectedItems = [];
+    selectedItems.push({ id, name, stock });
+    renderSelectedItems();
+    $('#itemSearchInput').val('').focus();
+    $('#itemSearchDropdown').hide();
+}
+
+function addItemToBorrow2(id, name, stock) {
+    if (selectedItems.find(x => x.id == id)) {
+        alert('Item already added!');
+        return;
+    }
+    selectedItems = [];
+    selectedItems.push({ id, name, stock });
+    renderSelectedItems2();
+    $('#itemSearchInput2').val('').focus();
+    $('#itemSearchDropdown2').hide();
+}
+
+function renderSelectedItems2() {
+    const inputElement = document.getElementById("itemSearchInput2");
+    inputElement.value = selectedItems[0].name;
+    const inputElement2 = document.getElementById("itemmssOut");
+    inputElement2.value = selectedItems[0].name;
+    selectExpirationDate();
+}
+
+function renderSelectedItems2() {
+    const inputElement = document.getElementById("itemSearchInput");
+    inputElement.value = selectedItems[0].name;
+    const inputElement2 = document.getElementById("itemmssOut");
+    inputElement2.value = selectedItems[0].name;
+    isWithExpiration();
+}
+
+
+// Item search
+    $('#itemSearchInput2').on('input', debounce(function() {
+        const query = this.value.trim().toLowerCase();
+        const $dd = $('#itemSearchDropdown2').empty();
+        if (!query) { $dd.hide(); return; }
+        const matches = inventory.filter(i => i.item_name.toLowerCase().includes(query) && parseInt(i.current_stock) > 0);
+        if (matches.length === 0) {
+            $dd.append('<div class="dropdown-item text-muted">No available items</div>').show();
+            return;
+        }
+        matches.forEach(item => {
+            $dd.append(`
+                <div class="dropdown-item" onclick="addItemToBorrow2(${item.id}, '${escapeHtml(item.item_name)}', ${item.current_stock})">
+                    <strong>${escapeHtml(item.item_name)}</strong>
+                    <span class="badge bg-secondary float-end">Stock: ${item.current_stock}</span>
+                </div>
+            `);
+        });
+        $dd.show();
+    }, 300));
+
 $(document).ready(function() {
     loadStockMonitoring();
     loadItemsSelect();
+    loadInventory();
     loadStockInOutMonitoring(currentPage);
     $('#proceedToStockIn').on('click', () => saveItem(true));
     $('#addItemModal').on('hidden.bs.modal', () => {

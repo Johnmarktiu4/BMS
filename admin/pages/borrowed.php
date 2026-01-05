@@ -10,7 +10,7 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
             <p class="text-muted mb-0">Track all barangay property currently borrowed or returned</p>
         </div>
         <button class="btn btn-success btn-lg shadow-sm" onclick="openBorrowModal()">
-            <i class="fas fa-plus-circle"></i> Add Borrow Record
+            <i class="fas fa-plus-circle"></i> Borrow Property
         </button>
     </div>
 
@@ -697,7 +697,7 @@ function saveBorrow() {
         if (r.status === 'success') {
             $('#borrowModal').modal('hide');
             loadAllTransactions();
-            alert('Borrow recorded successfully!');
+            alert('The equipment(s) successfully borrowed');
         } else {
             alert('Error: ' + r.message);
         }

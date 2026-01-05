@@ -163,10 +163,10 @@ foreach ($blotters as $b) {
     $pdf->Cell($col_date, $rowHeight, $dateFiled, 1, 1, 'C', true);
 }
 
-// === ADDED: PREPARED BY (appears after all table data) ===
+// === ADDED: Prepared By (appears after all table data) ===
 $pdf->Ln(15);
 $pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(0, 10, 'PREPARED BY : '. $blotters[0]['official_name']  , 0, 1, 'R');
+$pdf->Cell(0, 10, 'Prepared By : '. $blotters[0]['official_name']  , 0, 1, 'R');
 // ===================================================================
 // OUTPUT PDF
 // ===================================================================

@@ -116,11 +116,11 @@ $html .= '</tbody></table>';
 $pdf->writeHTML($html, true, false, true, false, '');
 
 // ===================================================================
-// PREPARED BY – RIGHT ALIGNED
+// Prepared By – RIGHT ALIGNED
 // ===================================================================
 $pdf->Ln(20);
 $pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(0, 10, 'PREPARED BY : ' . $officials[0]['full_name'], 0, 1, 'R');
+$pdf->Cell(0, 10, 'Prepared By : ' . $officials[0]['full_name'], 0, 1, 'R');
 
 // ===================================================================
 // OUTPUT

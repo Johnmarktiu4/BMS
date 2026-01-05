@@ -142,10 +142,10 @@ $html = '
 ';
 
 $pdf->writeHTML($html, true, false, true, false, '');
-// === ADDED: PREPARED BY (appears after all table data) ===
+// === ADDED: Prepared By (appears after all table data) ===
 $pdf->Ln(15);
 $pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(0, 10, 'PREPARED BY : MARIO MOJICA', 0, 1, 'R');
+$pdf->Cell(0, 10, 'Prepared By : MARIO MOJICA', 0, 1, 'R');
 // ===================================================================
 // OUTPUT PDF
 // ===================================================================

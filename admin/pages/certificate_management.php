@@ -183,7 +183,7 @@
             width: 200px;
             margin-left: auto;
             margin-right: 0;
-            margin-top: 50px;
+            margin-top: -14px;
         }
 
         .validity-notice {
@@ -733,7 +733,7 @@
                 <div class="applicant-signature"><div class="signature-line">Applicant Signature</div></div>
                 <div class="punong-signature">
                 <p style="text-align:right;">${captain}</p>
-                    <div class="signature-line"><strong>Punong Barangay</strong><br><strong>Barangay 3</strong></div>
+                    <div class="signature-line"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Punong Barangay</strong><br><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Barangay 3</strong></div>
                 </div>
             </div>`;
             } else if (type === 'residency') {
@@ -789,8 +789,8 @@
             </p>
             <div class="punong-signature">
                 <p style="text-align:right;">${captain}</p>
-                <div class="signature-line"><strong>Punong Barangay</strong><br><strong>Barangay 3</strong></div>
-            </div>
+                    <div class="signature-line"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Punong Barangay</strong><br><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Barangay 3</strong></div>
+                </div>
             <p class="validity-notice text-primary" style="margin-top:30px;">
                 VALID FOR SIX (6) MONTHS ONLY/DON'T ACCEPT WITHOUT DRY SEAL
             </p>`;

@@ -634,6 +634,51 @@ elseif ($action === 'archive_item') {
    elseif ($action === 'fetch_stock_in_out_monitoring') {
     $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
     $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+    $search = isset($_GET['search']) ? $_GET['search'] : 0;
+    $offset = ($page - 1) * $limit;
+
+    $where = " WHERE i.archived = 0";
+
+    if ($search !== 0){
+        $where .= " AND sm.item_id= $search";
+    }
+
+    $sql = "
+        SELECT
+            sm.id,
+            sm.item_id,
+            i.item_name,
+            i.description,
+            sm.qty,
+            sm.movement_type,
+            sm.movement_date,
+            sm.remarks,
+            sm.created_by
+        FROM stock_movement sm
+        JOIN inventory i ON sm.item_id = i.id
+        $where
+        ORDER BY sm.movement_date DESC, sm.id DESC
+        LIMIT $offset, $limit
+    ";
+    
+    $result = $conn->query($sql);
+    $items = [];
+    while ($row = $result->fetch_assoc()) {
+        $items[] = $row;
+    }
+
+    $count_sql = "SELECT COUNT(*) as total FROM stock_movement sm
+                 JOIN inventory i ON sm.item_id = i.id
+                 WHERE i.archived = 0";
+
+    $count_result = $conn->query($count_sql);
+    $total = $count_result->fetch_assoc()['total'];
+    $response = ['status' => 'success', 'data' => $items, 'total' => $total];
+}
+   elseif ($action === 'fetch_stock_in_out_monitoring2') {
+    $page = 1;
+    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+    $search = (int)$_POST['search'];
     $offset = ($page - 1) * $limit;
 
     $sql = "
@@ -649,7 +694,7 @@ elseif ($action === 'archive_item') {
             sm.created_by
         FROM stock_movement sm
         JOIN inventory i ON sm.item_id = i.id
-        WHERE i.archived = 0
+        WHERE i.archived = 0 AND sm.item_id = $search
         ORDER BY sm.movement_date DESC, sm.id DESC
         LIMIT $offset, $limit
     ";

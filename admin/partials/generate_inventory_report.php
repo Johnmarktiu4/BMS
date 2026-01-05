@@ -168,10 +168,10 @@ $pdf->Ln(8);
 $pdf->SetFont('helvetica', 'I', 10);
 $pdf->SetTextColor(100, 100, 100);
 $pdf->Cell(0, 8, 'Note: Total Declared Value = Sum of (Quantity On Hand × Unit Declared Value) for all items', 0, 1, 'C');
-// === ADDED: PREPARED BY (appears after all table data) ===
+// === ADDED: Prepared By (appears after all table data) ===
 $pdf->Ln(15);
 $pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(0, 10, 'PREPARED BY : MARIO MOJICA', 0, 1, 'R');
+$pdf->Cell(0, 10, 'Prepared By : MARIO MOJICA', 0, 1, 'R');
 // ===================================================================
 // OUTPUT PDF
 // ===================================================================
