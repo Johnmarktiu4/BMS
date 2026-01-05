@@ -887,7 +887,7 @@
                 {
                     hearingCount = hearingCount + 1;
                 }
-                if (hearingCount === 1){
+                if (pandaya === 0){
                     summon = true;
                 }
                 if (pandaya === 2){
