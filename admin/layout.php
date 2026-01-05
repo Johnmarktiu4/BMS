@@ -82,7 +82,7 @@ $pagePath = "pages/$page.php";
             <button class="navbar-toggler" id="sidebarToggle"><span class="navbar-toggler-icon"></span></button>
             <a class="navbar-brand mx-auto mx-lg-0" href="?page=dashboard">
                 <img src="../assets/image/Logo/Brgy3_logo-removebg-preview.png" alt="Logo" style="width:45px;height:45px;">
-                Barangay 3 Emilio Aguinaldo
+                MIS Barangay 3 Emilio Aguinaldo
             </a>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">

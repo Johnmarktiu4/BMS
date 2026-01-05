@@ -115,7 +115,7 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
                                 <th>Item Name</th>
                                 <th>Quantity</th>
                                 <th>Borrowed On</th>
-                                <th>Return By</th>
+                                <th>Return Date</th>
                             </tr>
                         </thead>
                         <tbody id="viewItemsBody"></tbody>
@@ -221,7 +221,8 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
                                 <th>Item</th>
                                 <th>Borrowed Qty</th>
                                 <th>Good Condition</th>
-                                <th>Damaged/Lost</th>
+                                <th>Damaged</th>
+                                <th>Lost</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -716,6 +717,7 @@ function openReturnModal(borrowerName, borrowerId) {
                 <td>${escapeHtml(item.item_name)}</td>
                 <td>${item.quantity}</td>
                 <td><input type="number" class="form-control form-control-sm good-qty" min="0" max="${item.quantity}" value="${item.quantity}" data-id="${item.id}"></td>
+                <td><input type="number" class="form-control form-control-sm damaged-qty" min="0" max="${item.quantity}" value="0" data-id="${item.id}"></td>
                 <td><input type="number" class="form-control form-control-sm damaged-qty" min="0" max="${item.quantity}" value="0" data-id="${item.id}"></td>
             </tr>
         `);

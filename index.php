@@ -279,7 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
                     </div>
                 </div>
                 <div class="welcome-text">
-                    <h2>Welcome Back!</h2>
+                    <h4>MIS Barangay 3 Emilio Aguinaldo</h4>
                     <p>Enter your username and password to access the system.</p>
                 </div>
             </div>
