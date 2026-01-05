@@ -143,7 +143,7 @@ foreach ($blotters as $b) {
         'FORWARDED TO POLICE' => 'FORWARDED',
         default => 'PENDING'
     };
-    $hearings = $b['hearing_count'] . '/3';
+    $hearings = $b['hearing_count'] - 1 . '/3';
     $dateFiled = date('M j, Y', strtotime($b['date_filed']));
     // Dynamic row height
     $maxLines = max(
