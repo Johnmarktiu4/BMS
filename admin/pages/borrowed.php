@@ -10,7 +10,7 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
             <p class="text-muted mb-0">Track all barangay property currently borrowed or returned</p>
         </div>
         <button class="btn btn-success btn-lg shadow-sm" onclick="openBorrowModal()">
-            <i class="fas fa-plus-circle"></i> Add Equipment
+            <i class="fas fa-plus-circle"></i> Add Borrow Record
         </button>
     </div>
 
@@ -134,7 +134,7 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
-                <h5 class="modal-title"><i class="fas fa-plus"></i> Add Equipment</h5>
+                <h5 class="modal-title"><i class="fas fa-plus"></i> Add Borrow Record</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -177,7 +177,7 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Return By (Max 7 days) <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="return_date" min="<?= date('Y-m-d') ?>" required>
+                            <input type="date" class="form-control" id="return_date" min="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d', strtotime('+7 days')) ?>" required>
                             <small class="text-muted">Maximum 7 days from borrow date</small>
                         </div>
                         <div class="col-md-4">

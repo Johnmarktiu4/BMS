@@ -221,10 +221,9 @@
                     <div class="col-md-4">
                         <input type="text" class="form-control" id="searchInput" placeholder="Search by Case ID or Nature">
                     </div>
-                    <div class="col-md-3">
+                    <div style="display: none;">
                         <select class="form-select" id="statusFilter">
                             <option value="">All Status</option>
-                            选项
                             <option value="New">New</option>
                             <option value="Settled">Settled</option>
                             <option value="On Going">On Going</option>
@@ -252,7 +251,6 @@
                         <thead>
                             <tr>
                                 <th>Case ID</th>
-                                <th>Status</th>
                                 <th>Nature of Incident</th>
                                 <th>Persons Involved</th>
                                 <th>Barangay Incharge</th>
@@ -280,9 +278,9 @@
                         <input type="hidden" id="incidentId">
 
                         <div class="row g-4 mb-4">
-                            <div class="col-md-4">
+                            <div style="display: none;">
                                 <label class="form-label">Status <span class="text-danger">*</span></label>
-                                <select class="form-select form-select-lg" id="status" required>
+                                <select class="form-select form-select-lg" id="status">
                                     <option value="New">New</option>
                                     <option value="Settled">Settled</option>
                                     <option value="On Going">On Going</option>

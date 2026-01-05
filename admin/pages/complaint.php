@@ -96,7 +96,7 @@
                 <div class="col-md-4">
                     <input type="text" class="form-control form-control-lg" id="searchInput" placeholder="Search by Case ID or Name">
                 </div>
-                <div class="col-md-3">
+                <div style="display: none;">
                     <select class="form-select form-select-lg" id="statusFilter">
                         <option value="">All Status</option>
                         <option value="New">New</option>
@@ -126,7 +126,6 @@
                     <thead class="table-dark">
                         <tr>
                             <th width="10%">Case ID</th>
-                            <th width="10%">Status</th>
                             <th width="20%">Complainant(s)</th>
                             <th width="20%">Defendant(s)</th>
                             <th width="15%">Official</th>
@@ -156,9 +155,9 @@
                     <input type="hidden" id="complaintId">
 
                     <div class="row g-5 mb-5">
-                        <div class="col-md-4">
+                        <div style="display: none;">
                             <label class="form-label">Status <span class="text-danger">*</span></label>
-                            <select class="form-select form-select-lg" id="status" required>
+                            <select class="form-select form-select-lg" id="status">
                                 <option value="New">New</option>
                                 <option value="Settled">Settled</option>
                                 <option value="On Going">On Going</option>
@@ -601,7 +600,6 @@ function renderComplaints(data) {
 $tbody.append(`
     <tr>
         <td><strong class="fs-5">${escapeHtml(c.case_id)}</strong></td>
-        <td><span class="badge ${badgeClass} fs-6">${escapeHtml(c.status)}</span></td>
         <td>${comp || '<em class="text-muted">None</em>'}</td>
         <td>${def || '<em class="text-muted">None</em>'}</td>
         <td>${escapeHtml(c.official_name || '—')}</td>

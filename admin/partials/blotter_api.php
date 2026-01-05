@@ -50,6 +50,8 @@ switch ($action) {
         $location = $_POST['location'] ?? null;
         $barangay_incharge_id = !empty($_POST['barangay_incharge_id']) ? (int)$_POST['barangay_incharge_id'] : null;
         $status = $_POST['status'] ?? 'Unresolved';
+        $date_schedule = $_POST['date_schedule'] ?? date('Y-m-d');
+        $time_schedule = $_POST['time_schedule'] ?? null;
 
         if ($id) {
             $stmt = $conn->prepare("UPDATE blotters SET 
@@ -62,12 +64,33 @@ switch ($action) {
             $stmt = $conn->prepare("INSERT INTO blotters (
                 case_id, complainant_ids, defendant_ids, nature_of_complaint, details, 
                 date_filed, incident_time, location, barangay_incharge_id, status, hearing_count
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)");
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
             $stmt->bind_param("ssssssssis", $case_id, $complainant_ids, $defendant_ids, $nature, $details, $date_filed, $incident_time, $location, $barangay_incharge_id, $status);
         }
 
         $success = $stmt->execute();
-        $stmt->close();
+        $stmt->close();       
+
+        $sql = "Select id, hearing_count FROM blotters WHERE case_id = '$case_id'";
+        $res = $conn->query($sql);
+        if ($res->num_rows > 0) {
+            $row = $res->fetch_assoc();
+            $idB = $row["id"];
+            $count = $row["hearing_count"];
+            
+            if ($count == 0) {
+                $count = $count + 1;
+                $stmt2 = $conn->prepare("INSERT INTO blotter_hearings 
+                    (blotter_id, hearing_number, hearing_date, hearing_time, barangay_incharge_id) 
+                    VALUES (?, ?, ?, ?, ?)");
+                $stmt2->bind_param("iissi", $idB, $count, $date_schedule, $time_schedule, $barangay_incharge_id);
+                $stmt2->execute();
+                $stmt2->close();
+
+                $conn->commit();
+            }
+        }
+
         echo json_encode(['success' => $success]);
         break;
 
@@ -177,6 +200,9 @@ switch ($action) {
         $attendees = json_encode($_POST['attendees'] ?? []);
         $summary = $_POST['summary'] ?? '';
         $outcome = $_POST['outcome'] ?? 'Unresolved';
+        $nexthearingSchedule = $_POST['nexthearingSchedule'] ?? null;
+        $nexthearingTimeSchedule = $_POST['nexthearingTimeSchedule'] ?? null;
+        $incharge = $_POST['barangay_incharge_id'] ?? 0;
 
         $conn->begin_transaction();
         try {
@@ -197,6 +223,23 @@ switch ($action) {
             }
             $stmt->execute();
             $stmt->close();
+
+            $conn->query("UPDATE blotters SET hearing_count = hearing_count + 1 WHERE id = $blotter_id");
+
+            $stmt_count = $conn->prepare("SELECT hearing_count FROM blotters WHERE id = ?");
+                $stmt_count->bind_param("i", $blotter_id);
+                $stmt_count->execute();
+                $hearing_number = $stmt_count->get_result()->fetch_assoc()['hearing_count'];
+                $stmt_count->close();
+                $hearing_number = $hearing_number + 1;
+            if ($hearing_number < 3) {
+                $stmt2 = $conn->prepare("INSERT INTO blotter_hearings 
+                    (blotter_id, hearing_number, hearing_date, hearing_time, barangay_incharge_id) 
+                    VALUES (?, ?, ?, ?, ?)");
+                $stmt2->bind_param("iissi", $blotter_id, $hearing_number, $hearing_date, $hearing_time, $incharge);
+                $stmt2->execute();
+                $stmt2->close();
+            }
 
             $newStatus = ($outcome === 'Resolved') ? 'Resolved' : 'Unresolved';
             $conn->query("UPDATE blotters SET status = '$newStatus' WHERE id = $blotter_id");

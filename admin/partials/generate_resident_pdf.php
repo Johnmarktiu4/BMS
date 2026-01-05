@@ -137,7 +137,7 @@ if ($is_single) {
         <tr><td><strong>Emergency Contact</strong></td><td>' . ($r['emergency_name'] ? htmlspecialchars($r['emergency_name']) . ' (' . ($r['emergency_relationship'] ?: '—') . ') - ' . ($r['emergency_contact'] ?: '—') : '—') . '</td></tr>
     </table>';
 
-    $html .= '<p>I hereby certify that the above information is true and correct to the best of my knowledge. I understand<br>
+    $html .= '<p>  I hereby certify that the above information is true and correct to the best of my knowledge. I understand<br>
     that for the Barangay to carry out its mandate pursuant to Section 394 (d)(6) of the Local Government<br>
     Code of 1991, they must necessarily process my personal information for easy identification of<br>
     inhabitants, as a tool in planning, and as an updated reference in the number of inhabitants of the<br>

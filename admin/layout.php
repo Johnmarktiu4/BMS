@@ -173,7 +173,7 @@ $pagePath = "pages/$page.php";
             <?php if ($is_full_access || $is_secretary || $is_kagawad): ?>
                 <div class="menu-section"><h6>Physical Resources</h6></div>
                 <a href="?page=borrowed" class="menu-item <?php echo $page=='borrowed'?'active':''; ?>">
-                    <i class="fas fa-building-shield"></i> Barangay Property
+                    <i class="fas fa-building-shield"></i> Barangay Property borrowed/return
                 </a>
             <?php endif; ?>
 

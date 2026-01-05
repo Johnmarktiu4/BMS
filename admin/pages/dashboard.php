@@ -13,6 +13,17 @@ $pwd = $pwd_query ? $pwd_query->fetch_row()[0] : 0;
 $senior_query = $conn->query("SELECT COUNT(*) FROM residents WHERE senior = 'Yes' AND archived = 0");
 $senior = $senior_query ? $senior_query->fetch_row()[0] : 0;
 
+$infant_query = $conn->query("SELECT COUNT(*) FROM residents WHERE archived = 0  AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 0 AND 1");
+$infant = $infant_query ? $infant_query->fetch_row()[0] : 0;
+$toddler_query = $conn->query("SELECT COUNT(*) FROM residents WHERE archived = 0  AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 1 AND 3");
+$toddler = $toddler_query ? $toddler_query->fetch_row()[0] : 0;
+$minor_query = $conn->query("SELECT COUNT(*) FROM residents WHERE archived = 0  AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 4 AND 12");
+$minor = $minor_query ? $minor_query->fetch_row()[0] : 0;
+$teen_query = $conn->query("SELECT COUNT(*) FROM residents WHERE archived = 0  AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 13 AND 19");
+$teen = $teen_query ? $teen_query->fetch_row()[0] : 0;
+$adult_query = $conn->query("SELECT COUNT(*) FROM residents WHERE archived = 0  AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 20 AND 59");
+$adult = $adult_query ? $adult_query->fetch_row()[0] : 0;
+
 // === NEW: VOTERS COUNT ADDED HERE ===
 $voters_query = $conn->query("SELECT COUNT(*) FROM residents WHERE is_voter = 1 AND archived = 0");
 $voters = $voters_query ? $voters_query->fetch_row()[0] : 0;
@@ -22,16 +33,38 @@ $total_households = $total_households_query ? $total_households_query->fetch_row
 $households_with_pwd_query = $conn->query("
     SELECT COUNT(DISTINCT r1.id)
     FROM residents r1
-    WHERE r1.is_head_of_family = 1 AND archived = 0
-      AND EXISTS (SELECT 1 FROM residents r2 WHERE (r2.head_of_family_id = r1.id OR r2.id = r1.id) AND r2.pwd = 'Yes' AND r2.archived = 0)
+    WHERE pwd = 'Yes' AND archived = 0
 ");
 $households_with_pwd = $households_with_pwd_query ? $households_with_pwd_query->fetch_row()[0] : 0;
+$male_with_pwd_query = $conn->query("
+    SELECT COUNT(DISTINCT r1.id)
+    FROM residents r1
+    WHERE pwd = 'Yes' AND archived = 0 AND sex = 'Male'
+");
+$male_with_pwd = $male_with_pwd_query ? $male_with_pwd_query->fetch_row()[0] : 0;
+$female_with_pwd_query = $conn->query("
+    SELECT COUNT(DISTINCT r1.id)
+    FROM residents r1
+    WHERE pwd = 'Yes' AND archived = 0 AND sex = 'Female'
+");
+$female_with_pwd = $female_with_pwd_query ? $female_with_pwd_query->fetch_row()[0] : 0;
 $households_with_senior_query = $conn->query("
     SELECT COUNT(DISTINCT r1.id)
     FROM residents r1
-    WHERE r1.is_head_of_family = 1 AND archived = 0
-      AND EXISTS (SELECT 1 FROM residents r2 WHERE (r2.head_of_family_id = r1.id OR r2.id = r1.id) AND r2.senior = 'Yes' AND r2.archived = 0)
+    WHERE senior = 'Yes' AND archived = 0
 ");
+$male_with_senior_query = $conn->query("
+    SELECT COUNT(DISTINCT r1.id)
+    FROM residents r1
+    WHERE pwd = 'Yes' AND archived = 0 AND sex = 'Male'
+");
+$male_with_senior = $male_with_senior_query ? $male_with_senior_query->fetch_row()[0] : 0;
+$female_with_senior_query = $conn->query("
+    SELECT COUNT(DISTINCT r1.id)
+    FROM residents r1
+    WHERE pwd = 'Yes' AND archived = 0 AND sex = 'Female'
+");
+$female_with_senior = $female_with_senior_query ? $female_with_senior_query->fetch_row()[0] : 0;
 $households_with_senior = $households_with_senior_query ? $households_with_senior_query->fetch_row()[0] : 0;
 $count_blotters = $conn->query("SELECT COUNT(*) FROM blotters")->fetch_row()[0];
 $count_complaints = $conn->query("SELECT COUNT(*) FROM complaints")->fetch_row()[0];
@@ -304,7 +337,11 @@ closeDBConnection($conn);
                     
                    
                     <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Senior</div><div class="value"><?php echo number_format($senior); ?></div></div>
-                    <div class="stat-item"><i class="bi bi-person-standing"></i><div class="label">Minor</div><div class="value"><?php echo number_format($senior); ?></div></div>
+                    <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Adult</div><div class="value"><?php echo number_format($adult); ?></div></div>
+                    <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Teen</div><div class="value"><?php echo number_format($teen); ?></div></div>
+                    <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Minor</div><div class="value"><?php echo number_format($minor); ?></div></div>
+                    <div class="stat-item"><i class="bi bi-person-standing"></i><div class="label">Toddler</div><div class="value"><?php echo number_format($toddler); ?></div></div>
+                    <div class="stat-item"><i class="bi bi-person-standing"></i><div class="label">Infant</div><div class="value"><?php echo number_format($infant); ?></div></div>
 
                     <div class="stat-item"><i class="bi bi-briefcase"></i><div class="label">Employed</div><div class="value"><?php echo number_format($employed); ?></div></div>
                     <div class="stat-item"><i class="bi bi-person-x"></i><div class="label">Unemployed</div><div class="value"><?php echo number_format($total_residents - $employed); ?></div></div>
@@ -321,8 +358,12 @@ closeDBConnection($conn);
                 <div class="title mt-3">Total Households</div>
                 <div class="big-number"><?php echo number_format($total_households); ?></div>
                 <div class="info-box">
-                    <div class="info-row"><span>With PWD</span><strong><?php echo number_format($households_with_pwd); ?></strong></div>
-                    <div class="info-row"><span>With Senior</span><strong><?php echo number_format($households_with_senior); ?></strong></div>
+                    <div class="info-row"><span><strong>With PWD</strong></span><strong><?php echo number_format($households_with_pwd); ?></strong></div>
+                    <div class="info-row"><span>&nbsp;&nbsp;-PWD Male</span><strong><?php echo number_format($male_with_pwd); ?></strong></div>
+                    <div class="info-row"><span>&nbsp;&nbsp;-PWD Female</span><strong><?php echo number_format($female_with_pwd); ?></strong></div>
+                    <div class="info-row"><span><strong>With Senior</strong></span><strong><?php echo number_format($households_with_senior); ?></strong></div>
+                    <div class="info-row"><span>&nbsp;&nbsp;-Senior Male</span><strong><?php echo number_format($male_with_senior); ?></strong></div>
+                    <div class="info-row"><span>&nbsp;&nbsp;-Senior Female</span><strong><?php echo number_format($female_with_senior); ?></strong></div>
                 </div>
             </div>
             <br>

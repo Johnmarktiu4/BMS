@@ -857,8 +857,6 @@
             }
             $('#yearofresidency').prop('disabled', true);
             $('#employmentStatus').prop('disabled', true);
-            $('#pwdNo').prop('disabled', true);
-            $('#pwdYes').prop('disabled', true);
             $('#soloParentYes').prop('disabled', true);
             $('#soloParentNo').prop('disabled', true);
             $('#headOfFamily').value = 'Select Relationship';

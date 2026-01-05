@@ -296,6 +296,14 @@
                                     <option value="">Select Official</option>
                                 </select>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Hearing Schedule Date *</label>
+                                <input type="date" class="form-control form-control-lg" id="date_schedule" min="<?= date('Y-m-d') ?>" value="<?=  date('Y-m-d') ?>" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Hearing Time *</label>
+                                <input type="time" class="form-control form-control-lg" id="time_schedule" required>
+                            </div>
                         </div>
 
 
@@ -563,7 +571,16 @@
                             <select class="form-select form-select-lg" id="hearing_outcome" required>
                                 <option value="Unresolved">Unresolved - Continue to next hearing</option>
                                 <option value="Resolved">Resolved - Case Closed</option>
+                                <option value="Forwarded to Police">Forwarded to Police</option>
                             </select>
+                        </div>
+                        <div class="mb-4" id="record_hearing_date_div" name="record_hearing_date_div" style="display: none;">
+                            <label class="form-label">Next Hearing Schedule Date *</label>
+                            <input type="date" class="form-control form-control-lg" id="date_schedule_record" min="<?= date('Y-m-d') ?>" value="<?=  date('Y-m-d') ?>" required>
+                        </div>
+                        <div class="mb-4" id="record_hearing_time_div" name="record_hearing_date_div" style="display: none;">
+                            <label class="form-label">Next Hearing Time *</label>
+                            <input type="time" class="form-control form-control-lg" id="time_schedule_record" required>
                         </div>
                     </form>
                 </div>
@@ -839,10 +856,13 @@
                     'Unresolved': 'bg-warning',
                     'Forwarded to Police': 'bg-danger'
                 } [b.status] || 'bg-secondary';
-                const hearingCount = parseInt(b.hearing_count || 0);
+                let hearingCount = parseInt(b.hearing_count || 0);
                 const lastRecorded = parseInt(b.last_hearing_recorded || 0);
                 const canSchedule = b.status !== 'Resolved' && hearingCount < 3;
                 const canRecord = hearingCount > lastRecorded;
+                if (hearingCount > 3){
+                    hearingCount = hearingCount - 1;
+                }
 
                 $tbody.append(`
             <tr>
@@ -859,7 +879,6 @@
                             <i class="fas fa-print"></i> Print
                         </a>
                         <button class="btn btn-warning mb-1" onclick="editBlotter(${b.id})"><i class="fas fa-edit"></i> Edit</button>
-                        ${canSchedule ? `<button class="btn btn-primary mb-1" onclick="scheduleHearing(${b.id}, ${hearingCount + 1})"><i class="fas fa-calendar-plus"></i> Schedule #${hearingCount + 1}</button>` : ''}
                         ${canRecord ? `<button class="btn btn-success mb-1" onclick="recordHearing(${b.id}, ${hearingCount})"><i class="fas fa-microphone"></i> Record #${hearingCount}</button>` : ''}
                         <button class="btn btn-info text-white" onclick="viewHearings(${b.id})"><i class="fas fa-gavel"></i> View</button>
                     </div>
@@ -904,6 +923,8 @@
             formData.append('location', $('#location').val());
             formData.append('barangay_incharge_id', $('#barangay_incharge_id').val());
             formData.append('status', $('#status').val());
+            formData.append('date_schedule', $('#date_schedule').val());
+            formData.append('time_schedule', $('#time_schedule').val());
             if (complainantFile) formData.append('complainant_file', complainantFile);
             if (defendantFile) formData.append('defendant_file', defendantFile);
 
@@ -1026,7 +1047,22 @@
                 $('#record_hearing_incharge').val(h.barangay_incharge_id || '');
                 $('#discussion_summary').val(h.discussion_summary || '');
                 $('#hearing_outcome').val(h.outcome || 'Unresolved');
+                console.log('Hearing outcome:', hearingNumber);
+                const dateHearing = document.getElementById('record_hearing_date_div');
+                const timeHearing = document.getElementById('record_hearing_time_div');
+                if (hearingNumber === 3) {
+                    console.log('Disabling options for hearing number 3');
+                    updatehearing_outcome(hearingNumber);
+                    dateHearing.style.display = 'none';
+                    document.getElementById('date_schedule_record').removeAttribute('required')
+                    timeHearing.style.display = 'none';
+                    document.getElementById('date_schedule_record').removeAttribute('required')
 
+                }
+                else {
+                    dateHearing.style.display = 'block';
+                    timeHearing.style.display = 'block';
+                }
                 const allPeople = [...JSON.parse(currentBlotter.complainant_ids || '[]'), ...JSON.parse(currentBlotter.defendant_ids || '[]')];
                 const attendees = h.attendees ? JSON.parse(h.attendees) : [];
                 const $tbody = $('#attendeesTableBody').empty();
@@ -1043,6 +1079,23 @@
                 $('#recordHearingModal').modal('show');
             }, 'json');
         };
+
+        function updatehearing_outcome(numberHearing) {
+            const toRestrict = ['Unresolved'];
+            // Iterate options and disable/enable accordingly
+            Array.from(hearing_outcome.options).forEach(opt => {
+            if (toRestrict.includes(opt.value)) {
+                opt.disabled = !Number.isNaN(numberHearing) && numberHearing === 3;
+            }
+            });
+
+            // If current selection is now disabled, reset to empty
+            const selected = hearing_outcome.value;
+            const selectedOption = hearing_outcome.querySelector(`option[value="${CSS.escape(selected)}"]`);
+            if (selectedOption && selectedOption.disabled) {
+            hearing_outcome.value = '';
+        }
+        }
 
         $('#recordHearingForm').on('submit', function(e) {
             e.preventDefault();
@@ -1063,6 +1116,8 @@
             formData.append('attendees', JSON.stringify(attendees));
             formData.append('summary', $('#discussion_summary').val());
             formData.append('outcome', $('#hearing_outcome').val());
+            formData.append('nexthearingSchedule', $('#date_schedule_record').val());
+            formData.append('nexthearingTimeSchedule', $('#time_schedule_record').val());
 
             $.ajax({
                 url: 'partials/blotter_api.php',
