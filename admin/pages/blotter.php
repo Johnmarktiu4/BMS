@@ -856,12 +856,12 @@
                     'Unresolved': 'bg-warning',
                     'Forwarded to Police': 'bg-danger'
                 } [b.status] || 'bg-secondary';
-                console.log('count',b.hearing_count);
-                let hearingCount = parseInt(b.hearing_count - 1 || 0);
-                const lastRecorded = parseInt(b.last_hearing_recorded || 0);
-                const canSchedule = b.status !== 'Resolved' && hearingCount < 3;
+                let hearingCount = parseInt(b.hearing_count || 0);
+                                const lastRecorded = parseInt(b.last_hearing_recorded || 0);
                 const canRecord = hearingCount > lastRecorded;
-                console.log(hearingCount);
+                hearingCount = parseInt(b.hearing_count - 1 || 0);
+                const canSchedule = b.status !== 'Resolved' && hearingCount < 3;
+
                 const official_full_name = "<?php echo $_SESSION['full_name']; ?>";
                 let canRecordStart = true;
                 let summon = false;
@@ -874,11 +874,17 @@
                 if (b.status === 'Resolved' || b.status === 'Forwarded to Police'){
                     canRecordStatus = false;
                 }
-
+                if (hearingCount === 0)
+                {
+                    hearingCount = hearingCount + 1;
+                }
                 if (hearingCount === 1){
                     summon = true;
                 }
+                console.log(hearingCount);
                 console.log('can', canRecordStart);
+                console.log('can1', canRecordStatus);
+                console.log('can2', canRecord);
                 console.log('status', b.status);
 
                 $tbody.append(`
@@ -899,7 +905,7 @@
                             <i class="fas fa-print"></i> Print Summon
                         </a>`: ''}
                         <button class="btn btn-warning mb-1" onclick="editBlotter(${b.id})"><i class="fas fa-edit"></i> Edit</button>
-                        ${canRecordStatus ? `${canRecordStart ? `${canRecord ? `<button class="btn btn-success mb-1" onclick="recordHearing(${b.id}, ${hearingCount})"><i class="fas fa-microphone"></i> Record #${hearingCount}</button>` : ''}` : ''}` : ''}
+                        ${canRecordStatus ? `${canRecordStart ? `${canRecord ? `<button class="btn btn-success mb-1" onclick="recordHearing(${b.id}, ${hearingCount})"><i class="fas fa-marker"></i> Record #${hearingCount}</button>` : ''}` : ''}` : ''}
                         <button class="btn btn-info text-white" onclick="viewHearings(${b.id})"><i class="fas fa-gavel"></i> View</button>
                     </div>
                 </td>

@@ -441,6 +441,18 @@ switch ($action) {
         if ($type === "Adult"){
             $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 20 AND 59";
         }
+        if ($type === "PWDMale"){
+            $where .= " AND pwd= 'Yes' and sex= 'Male'";
+        }
+        if ($type === "PWDFemale"){
+            $where .= " AND pwd= 'Yes' and sex= 'Female'";
+        }
+        if ($type === "SeniorMale"){
+            $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) >= 60 AND sex= 'Male'";
+        }
+        if ($type === "SeniorFemale"){
+            $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) >= 60 AND sex= 'Female'";
+        }
         $sql = "SELECT id, full_name, sex, civil_status, address, contact_number FROM residents $where 
                 ORDER BY id DESC";
         

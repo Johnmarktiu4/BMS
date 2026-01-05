@@ -56,13 +56,13 @@ $households_with_senior_query = $conn->query("
 $male_with_senior_query = $conn->query("
     SELECT COUNT(DISTINCT r1.id)
     FROM residents r1
-    WHERE pwd = 'Yes' AND archived = 0 AND sex = 'Male'
+    WHERE ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) >= 60 AND archived = 0 AND sex = 'Male'
 ");
 $male_with_senior = $male_with_senior_query ? $male_with_senior_query->fetch_row()[0] : 0;
 $female_with_senior_query = $conn->query("
     SELECT COUNT(DISTINCT r1.id)
     FROM residents r1
-    WHERE pwd = 'Yes' AND archived = 0 AND sex = 'Female'
+    WHERE ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) >= 60 AND archived = 0 AND sex = 'Female'
 ");
 $female_with_senior = $female_with_senior_query ? $female_with_senior_query->fetch_row()[0] : 0;
 $households_with_senior = $households_with_senior_query ? $households_with_senior_query->fetch_row()[0] : 0;
@@ -359,11 +359,11 @@ closeDBConnection($conn);
                 <div class="big-number"><?php echo number_format($total_households); ?></div>
                 <div class="info-box">
                     <div class="info-row"><span><strong>With PWD</strong></span><strong><?php echo number_format($households_with_pwd); ?></strong></div>
-                    <div class="info-row"><span>&nbsp;&nbsp;-PWD Male</span><strong><?php echo number_format($male_with_pwd); ?></strong></div>
-                    <div class="info-row"><span>&nbsp;&nbsp;-PWD Female</span><strong><?php echo number_format($female_with_pwd); ?></strong></div>
+                    <div class="info-row"><a onclick="loadResidentList('PWDMale')" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-PWD Male</span></a><strong><?php echo number_format($male_with_pwd); ?></strong></div>
+                    <div class="info-row"><a onclick="loadResidentList('PWDFemale')" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-PWD Female</span></a><strong><?php echo number_format($female_with_pwd); ?></strong></div>
                     <div class="info-row"><span><strong>With Senior</strong></span><strong><?php echo number_format($households_with_senior); ?></strong></div>
-                    <div class="info-row"><span>&nbsp;&nbsp;-Senior Male</span><strong><?php echo number_format($male_with_senior); ?></strong></div>
-                    <div class="info-row"><span>&nbsp;&nbsp;-Senior Female</span><strong><?php echo number_format($female_with_senior); ?></strong></div>
+                    <div class="info-row"><a onclick="loadResidentList('SeniorMale')" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-Senior Male</span></a><strong><?php echo number_format($male_with_senior); ?></strong></div>
+                    <div class="info-row"><a onclick="loadResidentList('SeniorFemale')" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-Senior Female</span></a><strong><?php echo number_format($female_with_senior); ?></strong></div>
                 </div>
             </div>
             <br>
