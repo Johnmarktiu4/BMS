@@ -503,6 +503,7 @@
             const search = $('#searchInput').val();
             const position = $('#positionFilter').val();
             const status = $('#statusFilter').val();
+            const startTerm = "<?php echo $_SESSION['elec_year']; ?>";
             entriesPerPage = parseInt($('#entriesSelect').val()) || 10;
             currentPage = page;
             $.post('partials/barangay_management_api.php', {
@@ -511,6 +512,7 @@
                 limit: entriesPerPage,
                 search,
                 position,
+                term: startTerm,
                 status
             }, data => {
                 if (data.status === 'success') {

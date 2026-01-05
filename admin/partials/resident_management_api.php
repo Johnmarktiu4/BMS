@@ -436,7 +436,10 @@ switch ($action) {
             $where .= " AND is_voter= '0'";
         }
         if ($type === "Senior"){
-            $where .= " AND senior= 'Yes'";
+            $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) >= 60";
+        }
+        if ($type === "Adult"){
+            $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 20 AND 59";
         }
         $sql = "SELECT id, full_name, sex, civil_status, address, contact_number FROM residents $where 
                 ORDER BY id DESC";

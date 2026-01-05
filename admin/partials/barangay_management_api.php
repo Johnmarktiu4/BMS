@@ -29,7 +29,11 @@ if ($action === 'fetch') {
     $search = $conn->real_escape_string($_POST['search'] ?? '');
     $position = $conn->real_escape_string($_POST['position'] ?? '');
     $status = $conn->real_escape_string($_POST['status'] ?? '');
-    $where = "WHERE archived = 0";
+    $startTerm = $conn->real_escape_string($_POST['term'] ?? '');
+
+    $start = substr($startTerm, 0, 4);
+
+    $where = "WHERE archived = 0 AND term_start_date = ". $start;
     if ($search) $where .= " AND (full_name LIKE '%$search%' OR contact LIKE '%$search%')";
     if ($position) $where .= " AND position = '$position'";
     if ($status) $where .= " AND status = '$status'";

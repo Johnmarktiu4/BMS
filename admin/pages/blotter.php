@@ -856,19 +856,30 @@
                     'Unresolved': 'bg-warning',
                     'Forwarded to Police': 'bg-danger'
                 } [b.status] || 'bg-secondary';
-                let hearingCount = parseInt(b.hearing_count || 0);
+                console.log('count',b.hearing_count);
+                let hearingCount = parseInt(b.hearing_count - 1 || 0);
                 const lastRecorded = parseInt(b.last_hearing_recorded || 0);
                 const canSchedule = b.status !== 'Resolved' && hearingCount < 3;
                 const canRecord = hearingCount > lastRecorded;
+                console.log(hearingCount);
                 const official_full_name = "<?php echo $_SESSION['full_name']; ?>";
+                let canRecordStart = true;
                 let summon = false;
-                if (hearingCount > 3){
-                    hearingCount = hearingCount - 1;
+                if (hearingCount >= 3){
+                    canRecordStart = false;
+                }
+
+                let canRecordStatus = true;
+
+                if (b.status === 'Resolved' || b.status === 'Forwarded to Police'){
+                    canRecordStatus = false;
                 }
 
                 if (hearingCount === 1){
                     summon = true;
                 }
+                console.log('can', canRecordStart);
+                console.log('status', b.status);
 
                 $tbody.append(`
             <tr>
@@ -888,7 +899,7 @@
                             <i class="fas fa-print"></i> Print Summon
                         </a>`: ''}
                         <button class="btn btn-warning mb-1" onclick="editBlotter(${b.id})"><i class="fas fa-edit"></i> Edit</button>
-                        ${canRecord ? `<button class="btn btn-success mb-1" onclick="recordHearing(${b.id}, ${hearingCount})"><i class="fas fa-microphone"></i> Record #${hearingCount}</button>` : ''}
+                        ${canRecordStatus ? `${canRecordStart ? `${canRecord ? `<button class="btn btn-success mb-1" onclick="recordHearing(${b.id}, ${hearingCount})"><i class="fas fa-microphone"></i> Record #${hearingCount}</button>` : ''}` : ''}` : ''}
                         <button class="btn btn-info text-white" onclick="viewHearings(${b.id})"><i class="fas fa-gavel"></i> View</button>
                     </div>
                 </td>

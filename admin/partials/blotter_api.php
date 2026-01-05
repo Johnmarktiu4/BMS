@@ -241,8 +241,8 @@ switch ($action) {
                 $stmt2->close();
             }
 
-            $newStatus = ($outcome === 'Resolved') ? 'Resolved' : 'Unresolved';
-            $conn->query("UPDATE blotters SET status = '$newStatus' WHERE id = $blotter_id");
+
+            $conn->query("UPDATE blotters SET status = '$outcome' WHERE id = $blotter_id");
 
             $conn->commit();
             echo json_encode(['success' => true]);

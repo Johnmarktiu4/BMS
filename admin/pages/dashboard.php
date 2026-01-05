@@ -337,7 +337,7 @@ closeDBConnection($conn);
                     
                    
                     <div class="stat-item"><a onclick="loadResidentList('Senior')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Senior</div><div class="value"><?php echo number_format($senior); ?></div></a></div>
-                    <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Adult</div><div class="value"><?php echo number_format($adult); ?></div></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Adult')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Adult</div><div class="value"><?php echo number_format($adult); ?></div></a></div>
                     <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Teen</div><div class="value"><?php echo number_format($teen); ?></div></div>
                     <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Minor</div><div class="value"><?php echo number_format($minor); ?></div></div>
                     <div class="stat-item"><i class="bi bi-person-standing"></i><div class="label">Toddler</div><div class="value"><?php echo number_format($toddler); ?></div></div>
