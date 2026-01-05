@@ -215,22 +215,23 @@ switch ($action) {
             $stmt->execute();
             $stmt->close();
             
-            if ($outcome !== "Resolved" || $outcome !== "Forwarded to Police")
-            $conn->query("UPDATE blotters SET hearing_count = hearing_count + 1 WHERE id = $blotter_id");
-            $conn->commit();
+            if ($outcome !== "Resolved" && $outcome !== "Forwarded to Police"){
+                $conn->query("UPDATE blotters SET hearing_count = hearing_count + 1 WHERE id = $blotter_id");
+                $conn->commit();
 
-            $stmt_count = $conn->prepare("SELECT hearing_count FROM blotters WHERE id = ?");
-                $stmt_count->bind_param("i", $blotter_id);
-                $stmt_count->execute();
-                $hearing_number = $stmt_count->get_result()->fetch_assoc()['hearing_count'];
-                $stmt_count->close();
-            if ($hearing_number <= 3) {
-                $stmt2 = $conn->prepare("INSERT INTO blotter_hearings 
-                    (blotter_id, hearing_number, hearing_date, hearing_time, barangay_incharge_id) 
-                    VALUES (?, ?, ?, ?, ?)");
-                $stmt2->bind_param("iissi", $blotter_id, $hearing_number, $hearing_date, $hearing_time, $incharge);
-                $stmt2->execute();
-                $stmt2->close();
+                $stmt_count = $conn->prepare("SELECT hearing_count FROM blotters WHERE id = ?");
+                    $stmt_count->bind_param("i", $blotter_id);
+                    $stmt_count->execute();
+                    $hearing_number = $stmt_count->get_result()->fetch_assoc()['hearing_count'];
+                    $stmt_count->close();
+                if ($hearing_number <= 3) {
+                    $stmt2 = $conn->prepare("INSERT INTO blotter_hearings 
+                        (blotter_id, hearing_number, hearing_date, hearing_time, barangay_incharge_id) 
+                        VALUES (?, ?, ?, ?, ?)");
+                    $stmt2->bind_param("iissi", $blotter_id, $hearing_number, $hearing_date, $hearing_time, $incharge);
+                    $stmt2->execute();
+                    $stmt2->close();
+                }
             }
 
 
