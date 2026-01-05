@@ -194,6 +194,7 @@ switch ($action) {
         break;
 
     case 'record_hearing':
+        date_default_timezone_set('Asia/Manila');
         $hearing_id = !empty($_POST['hearing_id']) ? (int)$_POST['hearing_id'] : null;
         $blotter_id = (int)$_POST['blotter_id'];
         $attendees = json_encode($_POST['attendees'] ?? []);
@@ -202,18 +203,19 @@ switch ($action) {
         $nexthearingSchedule = $_POST['nexthearingSchedule'] ?? null;
         $nexthearingTimeSchedule = $_POST['nexthearingTimeSchedule'] ?? null;
         $incharge = $_POST['barangay_incharge_id'] ?? 0;
-        $today = date('Y-m-d');
+        $todayy = date('Y-m-d');
         $currentTime = date("H:i");
 
         $conn->begin_transaction();
         try {
             if ($hearing_id) {
                 $stmt = $conn->prepare("UPDATE blotter_hearings SET attendees = ?, discussion_summary = ?, outcome = ?, hearing_date = ?, hearing_time = ?  WHERE id = ?");
-                $stmt->bind_param("sssiss", $attendees, $summary, $outcome, $today, $currentTime, $hearing_id);
+                $stmt->bind_param("sssssi", $attendees, $summary, $outcome, $todayy, $currentTime, $hearing_id);
             } 
             $stmt->execute();
             $stmt->close();
-
+            
+            if ($outcome !== "Resolved" || $outcome !== "Forwarded to Police")
             $conn->query("UPDATE blotters SET hearing_count = hearing_count + 1 WHERE id = $blotter_id");
             $conn->commit();
 

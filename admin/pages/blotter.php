@@ -868,6 +868,10 @@
                 {
                     pandaya = 3;
                 }
+                if (hearingCount > 3)
+                {
+                    pandaya = 100;
+                }
                 hearingCount = parseInt(b.hearing_count - 1 || 0);
                 const canSchedule = b.status !== 'Resolved' && hearingCount < 3;
 
@@ -895,6 +899,9 @@
                 }
                 if (pandaya === 3){
                     hearingCount = 3;
+                }
+                if (pandaya > 4){
+                    summon = false;
                 }
                 console.log(hearingCount);
                 console.log('can', canRecordStart);
