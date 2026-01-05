@@ -530,6 +530,23 @@
         // === RESIDENT SEARCH & SELECTION ===
         let residents = [];
         let selectedResident = null;
+        let captain = '';
+
+        get_captain();
+
+        function get_captain () {
+            $.ajax({
+                url: 'partials/get_officials_captain.php',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    captain = data[0].full_name;
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to fetch officials:', error);
+                }
+            });
+        }
 
         function get_officials() {
             $.ajax({
@@ -715,7 +732,8 @@
             <div class="signature-area">
                 <div class="applicant-signature"><div class="signature-line">Applicant Signature</div></div>
                 <div class="punong-signature">
-                    <div class="signature-line"><strong>Barangay Official</strong><br><strong>Barangay 3</strong></div>
+                <p style="text-align:right;">${captain}</p>
+                    <div class="signature-line"><strong>Punong Barangay</strong><br><strong>Barangay 3</strong></div>
                 </div>
             </div>`;
             } else if (type === 'residency') {
@@ -746,7 +764,8 @@
                 <strong><u>${purpose}</u></strong>
             </p>
             <div class="punong-signature">
-                <div class="signature-line"><strong>Barangay Official</strong></div>
+            <p style="text-align:right;">${captain}</p>
+                <div class="signature-line"><strong>Punong Barangay</strong></div>
             </div>
             <p class="validity-notice text-danger">
                 VALID FOR SIX (6) MONTHS ONLY/DON'T ACCEPT WITHOUT DRY SEAL
@@ -757,7 +776,7 @@
             <p class="cert-text" style="text-indent:40px;">
                 This is to certify that, <strong><u>${name}</u></strong> resident of
                 Street Barangay 3 Gen. Emilio Aguinaldo Dalahican, Cavite City. Is
-                belongs to an Indigent Family, that <strong><u>____________________________</u></strong> Has no
+                belongs to an Indigent Family, that <strong><u>${name}</u></strong> Has no
                 regular monthly income or any resource of livelihood
             </p>
             <p class="cert-text" style="margin-top:40px;text-indent:40px;">
@@ -769,7 +788,8 @@
                 <strong><u>${month}</u></strong>, <strong>${year}</strong>
             </p>
             <div class="punong-signature">
-                <div class="signature-line"><strong>Barangay Official</strong><br><strong>Barangay 3</strong></div>
+                <p style="text-align:right;">${captain}</p>
+                <div class="signature-line"><strong>Punong Barangay</strong><br><strong>Barangay 3</strong></div>
             </div>
             <p class="validity-notice text-primary" style="margin-top:30px;">
                 VALID FOR SIX (6) MONTHS ONLY/DON'T ACCEPT WITHOUT DRY SEAL

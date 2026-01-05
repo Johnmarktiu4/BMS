@@ -298,7 +298,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Hearing Schedule Date *</label>
-                                <input type="date" class="form-control form-control-lg" id="date_schedule" min="<?= date('Y-m-d') ?>" value="<?=  date('Y-m-d') ?>" required>
+                                <input type="date" class="form-control form-control-lg" id="date_schedule" min="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" value="<?= date('Y-m-d') ?>" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Hearing Time *</label>
@@ -628,7 +628,7 @@
 
         // ======================== SUMMON ALERT TOGGLE (RESTORED) ========================
         $('#status').on('change', function() {
-            $('#summonAlert').toggle(this.value === 'Forwarded to Police');
+            $('#summonAlert').toggle(this.value === 'Test');
         });
 
         // ======================== FILE UPLOAD FOR COMPLAINANT & DEFENDANT (FULLY RESTORED) ========================
@@ -860,8 +860,14 @@
                 const lastRecorded = parseInt(b.last_hearing_recorded || 0);
                 const canSchedule = b.status !== 'Resolved' && hearingCount < 3;
                 const canRecord = hearingCount > lastRecorded;
+                const official_full_name = "<?php echo $_SESSION['full_name']; ?>";
+                let summon = false;
                 if (hearingCount > 3){
                     hearingCount = hearingCount - 1;
+                }
+
+                if (hearingCount === 1){
+                    summon = true;
                 }
 
                 $tbody.append(`
@@ -878,6 +884,9 @@
                         <a href="partials/generate_blotter_pdf.php?id=${b.id}" target="_blank" class="btn btn-outline-primary mb-1">
                             <i class="fas fa-print"></i> Print
                         </a>
+                        ${summon ? `<a href="partials/generate_summon_pdf.php?id=${b.id}&full_name=${official_full_name}" target="_blank" class="btn btn-outline-primary mb-1">
+                            <i class="fas fa-print"></i> Print Summon
+                        </a>`: ''}
                         <button class="btn btn-warning mb-1" onclick="editBlotter(${b.id})"><i class="fas fa-edit"></i> Edit</button>
                         ${canRecord ? `<button class="btn btn-success mb-1" onclick="recordHearing(${b.id}, ${hearingCount})"><i class="fas fa-microphone"></i> Record #${hearingCount}</button>` : ''}
                         <button class="btn btn-info text-white" onclick="viewHearings(${b.id})"><i class="fas fa-gavel"></i> View</button>
