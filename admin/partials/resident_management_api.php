@@ -419,6 +419,39 @@ switch ($action) {
         }
         echo json_encode(['success' => true, 'exists' => $exists, 'data' => $datas]);
         break;
+      case 'get_resident_list':
+        $type = $conn->real_escape_string($_POST['type'] ?? '');
+
+        $where = 'WHERE archived = 0';
+        if ($type === 'Male'){
+            $where .= " AND sex= 'Male'";
+        }
+        if ($type === "Female"){
+            $where .= " AND sex= 'Female'";
+        }
+        if ($type === "Voters"){
+            $where .= " AND is_voter= '1'";
+        }
+        if ($type === "Non-Voters"){
+            $where .= " AND is_voter= '0'";
+        }
+        if ($type === "Senior"){
+            $where .= " AND senior= 'Yes'";
+        }
+        $sql = "SELECT id, full_name, sex, civil_status, address, contact_number FROM residents $where 
+                ORDER BY id DESC";
+        
+        $result = $conn->query($sql);
+        $residents = [];
+        while ($row = $result->fetch_assoc()) {
+            $residents[] = $row;
+        }
+
+        $count_sql = "SELECT COUNT(*) AS total FROM residents $where";
+        $total = $conn->query($count_sql)->fetch_assoc()['total'];
+
+        echo json_encode(['residents' => $residents, 'total' => $total]);
+        break;
     default:
         echo json_encode(['success'=>false,'message'=>'Invalid action']);
         break;

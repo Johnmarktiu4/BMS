@@ -328,15 +328,15 @@ closeDBConnection($conn);
                 <div class="title mt-3">Total Residents</div>
                 <div class="big-number"><?php echo number_format($total_residents); ?></div>
                 <div class="stat-grid">
-                    <div class="stat-item"><i class="bi bi-gender-male"></i><div class="label">Male</div><div class="value"><?php echo number_format($male); ?></div></div>
-                    <div class="stat-item"><i class="bi bi-gender-female"></i><div class="label">Female</div><div class="value"><?php echo number_format($female); ?></div></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Male')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-gender-male"></i><div class="label">Male</div><div class="value"><?php echo number_format($male); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Female')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-gender-female"></i><div class="label">Female</div><div class="value"><?php echo number_format($female); ?></div></a></div>
 
                     <!-- VOTERS COUNT ADDED HERE, RIGHT NEXT TO MALE -->
-                    <div class="stat-item"><i class="bi bi-check2-circle"></i><div class="label">Registered Voter</div><div class="value"><?php echo number_format($voters); ?></div></div>
-                    <div class="stat-item"><i class="bi bi-x-circle"></i><div class="label">Non-Registered</div><div class="value"><?php echo number_format($total_residents - $voters); ?></div></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Voters')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-check2-circle"></i><div class="label">Registered Voter</div><div class="value"><?php echo number_format($voters); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Non-Voters')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-x-circle"></i><div class="label">Non-Registered</div><div class="value"><?php echo number_format($total_residents - $voters); ?></div></a></div>
                     
                    
-                    <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Senior</div><div class="value"><?php echo number_format($senior); ?></div></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Senior')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Senior</div><div class="value"><?php echo number_format($senior); ?></div></a></div>
                     <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Adult</div><div class="value"><?php echo number_format($adult); ?></div></div>
                     <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Teen</div><div class="value"><?php echo number_format($teen); ?></div></div>
                     <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Minor</div><div class="value"><?php echo number_format($minor); ?></div></div>
@@ -397,10 +397,98 @@ closeDBConnection($conn);
             </div>
         </div>
     </div>
+
+        <!-- Resident Modal -->
+    <div class="modal fade" id="residentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-3 shadow-lg">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5><i class="fas fa-plus-circle me-2"></i>Resident List</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0" id="residentModalTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Full Name</th>
+                                    <th>Sex</th>
+                                    <th>CivilStatus</th>
+                                    <th>Address</th>
+                                    <th>Contact</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div><small class="text-muted" id="paginationInfo"></small></div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="paginationLinks"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+    function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    document.body.appendChild(alertDiv);
+    setTimeout(() => alertDiv.remove(), 5000);
+}
+    function loadResidentList(param) {
+        $.ajax({
+            url: 'partials/resident_management_api.php',
+            type: 'POST',
+            data: {
+                action: 'get_resident_list',
+                type: param
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.residents) {
+                    console.log(response.residents);
+                    updateResidentListTable(response.residents);
+                }
+                else{
+                    showAlert('danger', response.message || 'Failed to load resident list.');
+                }
+            }
+        });
+    }
+
+    function updateResidentListTable(data) {
+        let tbody = '';
+        
+        if (!data.length) {
+            tbody += '<tr><td colspan="6" class="text-center py-5 text-muted">No resident found.</td></tr>';
+            return;
+        }
+        console.log(data);
+        data.forEach(item => {
+            tbody += `
+                <tr>
+                    <td><strong>${item.id}</strong></td>
+                    <td>${item.full_name || '—'}</td>
+                    <td>${item.sex}</td>
+                    <td>${item.civil_status}</td>
+                    <td>${item.address}</td>
+                    <td>${item.contact_number || '—'}</td>
+                </tr>
+            `;
+        });
+        $('#residentModalTable tbody').html(tbody);
+    }
+
 document.addEventListener('DOMContentLoaded', function() {
     new Chart(document.getElementById('overviewChart'), {
         type: 'bar',
