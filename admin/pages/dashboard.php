@@ -437,6 +437,8 @@ closeDBConnection($conn);
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+    console.log('<?php echo $_SESSION['user_type']; ?>');
+    console.log('<?php echo $_SESSION['position']; ?>');
     function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;

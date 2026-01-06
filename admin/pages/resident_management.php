@@ -844,6 +844,7 @@
     $('#dateOfBirth').on('change', function() {
         age = new Date().getFullYear() - new Date(this.value).getFullYear();
         const controlContact = document.getElementById('contactinfo');
+        const isHeadF = document.getElementById('headOfFamily');
         if (age < 8) {
             controlContact.style.display = 'none';
             if (age < 18) {
@@ -853,9 +854,14 @@
                 document.getElementById('emailAddress').removeAttribute('required')
                 updateCivilStatusByAge(age);
                 document.getElementById('employmentStatus').value = 'Unemployed';
-                document.getElementById('yearofresidency').value = age;
+                if (isHeadF.checked === true)
+                {
+                    showAlert('danger', 'Invalid Age for the head of the family');
+                    document.getElementById('headOfFamily').checked = false;
+                    toggleFamilyControls();
+                }
+
             }
-            $('#yearofresidency').prop('disabled', true);
             $('#employmentStatus').prop('disabled', true);
             $('#soloParentYes').prop('disabled', true);
             $('#soloParentNo').prop('disabled', true);
@@ -871,7 +877,12 @@
                 document.getElementById('emailAddress').removeAttribute('required')
                 updateCivilStatusByAge(age);
                 document.getElementById('employmentStatus').value = 'Unemployed';
-                document.getElementById('yearofresidency').value = age;
+                if (isHeadF.checked === true)
+                {
+                    showAlert('danger', 'Invalid Age for the head of the family');
+                    document.getElementById('headOfFamily').checked = false;
+                    toggleFamilyControls();
+                }
             }
         }
     });

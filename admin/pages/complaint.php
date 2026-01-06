@@ -298,21 +298,23 @@
                     <div class="row g-5 mt-5">
                         <div class="col-md-6">
                             <label class="form-label">Complainant Document</label>
+                            <input type="file" id="complainantFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
                             <div class="file-drop-area" id="complainantFileDrop">
                                 <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
                                 <p class="mb-0 fw-bold">Drop file here or click to upload</p>
                                 <small class="text-muted">PDF, JPG, PNG only</small>
-                                <input type="file" id="complainantFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+                                <!-- <input type="file" id="complainantFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;"> -->
                             </div>
                             <div id="complainantFileList" class="mt-3"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Defendant Document</label>
+                            <input type="file" id="defendantFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
                             <div class="file-drop-area" id="defendantFileDrop">
                                 <i class="fas fa-cloud-upload-alt fa-3x text-danger mb-3"></i>
                                 <p class="mb-0 fw-bold">Drop file here or click to upload</p>
                                 <small class="text-muted">PDF, JPG, PNG only</small>
-                                <input type="file" id="defendantFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+                                <!-- <input type="file" id="defendantFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none;"> -->
                             </div>
                             <div id="defendantFileList" class="mt-3"></div>
                         </div>

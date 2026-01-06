@@ -461,7 +461,7 @@ function updateStockMonitoringTable(items) {
                 <td>${item.remarks || '—'}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#stockMonitoringModal" onclick="loadStockInOutMonitoring2(${item.id})" title="Edit">
-                        <i class="fas fa-edit"></i>
+                        <i class="fas fa-eye"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-primary me-1" onclick="editItem(${item.id})" title="Edit">
                         <i class="fas fa-edit"></i>

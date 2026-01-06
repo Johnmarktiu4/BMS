@@ -9,7 +9,7 @@ $user_type = $_SESSION['user_type'] ?? 'official'; // 'admin' or 'official'
 $position = $_SESSION['position'] ?? '';
 
 // Define roles
-$is_full_access = ($user_type === 'admin') || ($position === 'Barangay Captain') || ($position === 'System Administrator');
+$is_full_access = ($user_type == 'admin' ) ? true : false;
 $is_secretary = ($position === 'Secretary');
 $is_kagawad = (stripos($position, 'Kagawad') !== false);
 
@@ -26,16 +26,23 @@ $allowed_pages = [
 if (!$is_full_access) {
     if ($is_secretary) {
         // Secretary: ALL pages allowed EXCEPT role_accounts, system_logs, backup_restore
-        $allowed_pages = array_diff($allowed_pages, ['role_accounts', 'system_logs', 'backup_restore']);
+        $allowed_pages = array_diff($allowed_pages, ['role_accounts', 'backup_restore']);
     } elseif ($is_kagawad) {
         // Kagawad: ONLY these pages
-        $allowed_pages = ['dashboard', 'resident_management', 'household', 'archive_residents', 'system_logs', 'certificate_management', 'manage_inventory', 'borrowed', 'case_report', 'complaint', 'incident', 'blotter', 'mapping'];
+        $allowed_pages = ['dashboard', 'resident_management', 'household', 'archive_residents', 'certificate_management', 'manage_inventory', 'borrowed', 'case_report', 'complaint', 'incident', 'blotter', 'mapping', 'profile'];
     } else {
         // Other officials (default)
         $allowed_pages = ['certificate_management', 'manage_inventory', 'borrowed'];
     }
+}else {
+    $allowed_pages = [
+    'dashboard', 'resident_management', 'household', 'archive_residents',
+    'barangay_management', 'certificate_management', 'manage_inventory', 'borrowed',
+    'case_report', 'complaint', 'incident', 'blotter',
+    'role_accounts', 'system_logs', 'backup_restore', 'profile',
+    'barangay_archive', 'former_officials', 'system_settings', 'mapping'
+    ];
 }
-
 $page = isset($_GET['page']) ? basename($_GET['page']) : 'dashboard';
 $pagePath = "pages/$page.php";
 ?>

@@ -352,10 +352,11 @@
 
                         <div class="mb-4">
                             <label class="form-label">Supporting Documents</label>
+                            <input type="file" id="supporting_docs" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
                             <div class="file-drop-area" id="fileDropArea">
                                 <p class="mb-1">Drag & drop files here or click to upload</p>
                                 <small class="text-muted">PDF, JPG, PNG accepted</small>
-                                <input type="file" id="supporting_docs" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+                                <!-- <input type="file" id="supporting_docs" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none;"> -->
                             </div>
                             <div id="fileList" class="mt-3"></div>
                         </div>

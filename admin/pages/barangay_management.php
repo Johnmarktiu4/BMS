@@ -150,7 +150,7 @@
                                     <option value="Kagawad">Kagawad</option>
                                     <option value="Secretary">Secretary</option>
                                     <option value="Treasurer">Treasurer</option>
-                                    <option value="Other">Other</option>
+                                    <option value="SK Chairman">SK Chairman</option>
                                 </select>
                             </div>
                             <div class="col-md-2 col-sm-6">
@@ -275,7 +275,7 @@
                                             <option value="Kagawad">Kagawad</option>
                                             <option value="Secretary">Secretary</option>
                                             <option value="Treasurer">Treasurer</option>
-                                            <option value="Other">Other</option>
+                                            <option value="SK Chairman">SK Chairman</option>
                                         </select>
                                     </div>
 

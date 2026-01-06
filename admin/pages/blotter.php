@@ -269,7 +269,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Date Filed *</label>
-                                <input type="date" class="form-control form-control-lg" id="date_filed" required>
+                                <input type="date" class="form-control form-control-lg" id="date_filed" min="<?=  date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Incident Time *</label>
@@ -433,11 +433,12 @@
                                         <h5 class="mb-0"><i class="fas fa-paperclip"></i> Complainant Attachment (Optional)</h5>
                                     </div>
                                     <div class="card-body">
+                                        <input type="file" id="complainant_file" accept=".pdf,.jpg,.jpeg,.png" class="d-none">
                                         <div id="complainantFileDrop" class="border border-2 border-dashed rounded-3 p-5 text-center cursor-pointer hover-bg-light">
                                             <i class="fas fa-cloud-upload-alt fa-3x text-success mb-3"></i>
                                             <p class="mb-2"><strong>Click to upload</strong> or drag and drop</p>
                                             <small class="text-muted">PDF, JPG, PNG · Max 5MB</small>
-                                            <input type="file" id="complainant_file" accept=".pdf,.jpg,.jpeg,.png" class="d-none">
+                                            <!-- <input type="file" id="complainant_file" accept=".pdf,.jpg,.jpeg,.png" class="d-none"> -->
                                         </div>
                                         <div id="complainantFileList" class="mt-3"></div>
                                     </div>
@@ -450,11 +451,12 @@
                                         <h5 class="mb-0"><i class="fas fa-paperclip"></i> Defendant Attachment (Optional)</h5>
                                     </div>
                                     <div class="card-body">
+                                        <input type="file" id="defendant_file" accept=".pdf,.jpg,.jpeg,.png" class="d-none">
                                         <div id="defendantFileDrop" class="border border-2 border-dashed rounded-3 p-5 text-center cursor-pointer hover-bg-light">
                                             <i class="fas fa-cloud-upload-alt fa-3x text-danger mb-3"></i>
                                             <p class="mb-2"><strong>Click to upload</strong> or drag and drop</p>
                                             <small class="text-muted">PDF, JPG, PNG · Max 5MB</small>
-                                            <input type="file" id="defendant_file" accept=".pdf,.jpg,.jpeg,.png" class="d-none">
+                                            <!-- <input type="file" id="defendant_file" accept=".pdf,.jpg,.jpeg,.png" class="d-none"> -->
                                         </div>
                                         <div id="defendantFileList" class="mt-3"></div>
                                     </div>
@@ -531,7 +533,7 @@
                         <div class="row g-4 mb-4">
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Hearing Date *</label>
-                                <input type="date" class="form-control" id="record_hearing_date" name="record_hearing_date" value="<?= date('Y-m-d') ?>" required>
+                                <input type="date" class="form-control" id="record_hearing_date" name="record_hearing_date" min="<?=  date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" value="<?= date('Y-m-d') ?>" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Hearing Time *</label>
@@ -576,7 +578,7 @@
                         </div>
                         <div class="mb-4" id="record_hearing_date_div" name="record_hearing_date_div" style="display: none;">
                             <label class="form-label">Next Hearing Schedule Date *</label>
-                            <input type="date" class="form-control form-control-lg" id="date_schedule_record" min="<?= date('Y-m-d') ?>" value="<?=  date('Y-m-d') ?>" required>
+                            <input type="date" class="form-control form-control-lg" id="date_schedule_record" min="<?= date('Y-m-d', strtotime('+1 days')) ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" value="<?= date('Y-m-d', strtotime('+15 days')) ?>" required>
                         </div>
                         <div class="mb-4" id="record_hearing_time_div" name="record_hearing_date_div" style="display: none;">
                             <label class="form-label">Next Hearing Time *</label>

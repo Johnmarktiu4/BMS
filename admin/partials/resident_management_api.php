@@ -32,7 +32,7 @@ switch ($action) {
         }
         if ($status) {
             $registered = ($status == 'Yes') ? 1 : 0;
-            $where .= " AND registered = $registered";
+            $where .= " AND is_voter = $registered";
         }
         if ($ageSearch) {
             if ($ageSearch == 'Infant') {
