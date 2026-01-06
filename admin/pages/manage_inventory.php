@@ -460,7 +460,7 @@ function updateStockMonitoringTable(items) {
                 <td class="text-center">${unitValue > 0 ? '₱' + unitValue.toFixed(2) : '—'}</td>
                 <td>${item.remarks || '—'}</td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#stockMonitoringModal" onclick="loadStockInOutMonitoring2(${item.id})" title="Edit">
+                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#stockMonitoringModal" onclick="loadStockInOutMonitoring2(${item.id})" title="View">
                         <i class="fas fa-eye"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-primary me-1" onclick="editItem(${item.id})" title="Edit">

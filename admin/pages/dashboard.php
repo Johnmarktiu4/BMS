@@ -10,6 +10,8 @@ $female_query = $conn->query("SELECT COUNT(*) FROM residents WHERE sex = 'Female
 $female = $female_query ? $female_query->fetch_row()[0] : 0;
 $pwd_query = $conn->query("SELECT COUNT(*) FROM residents WHERE pwd = 'Yes' AND archived = 0");
 $pwd = $pwd_query ? $pwd_query->fetch_row()[0] : 0;
+$solo_parent_query = $conn->query("SELECT COUNT(*) FROM residents WHERE solo_parent = 'Yes' AND archived = 0");
+$solo = $solo_parent_query ? $solo_parent_query->fetch_row()[0] : 0;
 $senior_query = $conn->query("SELECT COUNT(*) FROM residents WHERE archived = 0 AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) >= 60");
 $senior = $senior_query ? $senior_query->fetch_row()[0] : 0;
 
@@ -346,8 +348,8 @@ closeDBConnection($conn);
                     <div class="stat-item"><a onclick="loadResidentList('Employed')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-briefcase"></i><div class="label">Employed</div><div class="value"><?php echo number_format($employed); ?></div></a></div>
                     <div class="stat-item"><a onclick="loadResidentList('Unemployed')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-x"></i><div class="label">Unemployed</div><div class="value"><?php echo number_format($total_residents - $employed); ?></div></a></div>
 
-                    <div class="stat-item"><a onclick="loadResidentList('Unemployed')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-wheelchair"></i><div class="label">PWD</div><div class="value"><?php echo number_format($pwd); ?></div></a></div>
-                    <div class="stat-item"><i class="bi bi-person-heart"></i><div class="label">Solo Parent</div><div class="value"><?php echo number_format($pwd); ?></div></div>
+                    <div class="stat-item"><a onclick="loadResidentList('PWD')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-wheelchair"></i><div class="label">PWD</div><div class="value"><?php echo number_format($pwd); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Solo')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-heart"></i><div class="label">Solo Parent</div><div class="value"><?php echo number_format($solo); ?></div></a></div>
 
                 </div>
             </div>

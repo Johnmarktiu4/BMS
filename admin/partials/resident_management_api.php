@@ -474,6 +474,9 @@ switch ($action) {
         if ($type === "PWD"){
             $where .= " AND pwd = 'Yes'";
         }
+        if ($type === "Solo"){
+            $where .= " AND solo_parent = 'Yes'";
+        }
         $sql = "SELECT id, full_name, date_of_birth, sex, civil_status, address, contact_number FROM residents $where 
                 ORDER BY id DESC";
         
