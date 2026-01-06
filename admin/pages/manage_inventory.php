@@ -695,10 +695,10 @@ function renderSelectedItems2() {
     selectExpirationDate();
 }
 
-function renderSelectedItems2() {
+function renderSelectedItems() {
     const inputElement = document.getElementById("itemSearchInput");
     inputElement.value = selectedItems[0].name;
-    const inputElement2 = document.getElementById("itemmssOut");
+    const inputElement2 = document.getElementById("itemmss");
     inputElement2.value = selectedItems[0].name;
     isWithExpiration();
 }
@@ -717,6 +717,26 @@ function renderSelectedItems2() {
         matches.forEach(item => {
             $dd.append(`
                 <div class="dropdown-item" onclick="addItemToBorrow2(${item.id}, '${escapeHtml(item.item_name)}', ${item.current_stock})">
+                    <strong>${escapeHtml(item.item_name)}</strong>
+                    <span class="badge bg-secondary float-end">Stock: ${item.current_stock}</span>
+                </div>
+            `);
+        });
+        $dd.show();
+    }, 300));
+
+        $('#itemSearchInput').on('input', debounce(function() {
+        const query = this.value.trim().toLowerCase();
+        const $dd = $('#itemSearchDropdown').empty();
+        if (!query) { $dd.hide(); return; }
+        const matches = inventory.filter(i => i.item_name.toLowerCase().includes(query) && parseInt(i.current_stock) > 0);
+        if (matches.length === 0) {
+            $dd.append('<div class="dropdown-item text-muted">No available items</div>').show();
+            return;
+        }
+        matches.forEach(item => {
+            $dd.append(`
+                <div class="dropdown-item" onclick="addItemToBorrow(${item.id}, '${escapeHtml(item.item_name)}', ${item.current_stock})">
                     <strong>${escapeHtml(item.item_name)}</strong>
                     <span class="badge bg-secondary float-end">Stock: ${item.current_stock}</span>
                 </div>

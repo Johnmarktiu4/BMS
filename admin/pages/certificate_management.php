@@ -695,7 +695,7 @@
             const sex = selectedResident.sex;
             const dob = selectedResident.date_of_birth;
             const civil = selectedResident.civil_status.toUpperCase();
-            const addr = `${selectedResident.house_number} ${selectedResident.street}, Barangay 3 Gen. Emilio Aguinaldo, Dalahican, Cavite City`;
+            const addr = `${selectedResident.house_number} ${selectedResident.street}`;
 
             let html = '';
 
@@ -710,7 +710,7 @@
                 CIVIL STATUS: <strong><u>${civil}</u></strong>
                 DATE OF BIRTH: <strong><u>${dob}</u></strong>
                 PLACE OF BIRTH: <strong>CAVITE CITY</strong> AND PRESENTLY RESIDING
-                STREET <strong>BARANGAY 3 GEN. EMILIO AGUINALDO</strong> DALAHICAN, CAVITE CITY.
+                <strong>${addr} BARANGAY 3 GEN. EMILIO AGUINALDO</strong> DALAHICAN, CAVITE CITY.
             </p>
             <p class="cert-text" style="text-indent:40px;">
                 THIS INDIVIDUAL IS KNOWN TO ME TO BE A RESIDENT OF THIS BARANGAY, A LAW-ABIDING
@@ -775,7 +775,7 @@
             <p class="cert-text"><strong>To whom it may concern:</strong></p>
             <p class="cert-text" style="text-indent:40px;">
                 This is to certify that, <strong><u>${name}</u></strong> resident of
-                Street Barangay 3 Gen. Emilio Aguinaldo Dalahican, Cavite City. Is
+                <strong>${addr} Barangay 3 Gen. Emilio Aguinaldo Dalahican, Cavite City</strong>. Is
                 belongs to an Indigent Family, that <strong><u>${name}</u></strong> Has no
                 regular monthly income or any resource of livelihood
             </p>
