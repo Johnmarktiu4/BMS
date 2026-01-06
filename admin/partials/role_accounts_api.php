@@ -67,6 +67,19 @@ if ($action === 'add_account') {
     }
     $check->close();
 
+    $check2 = $conn->prepare("SELECT ua.id, ua.username, ua.status,
+                   o.full_name, o.position, o.id AS official_id,
+                   ua.sec_a1, ua.sec_a2, ua.sec_a3
+            FROM user_roles_official_accounts ua
+            JOIN officials o ON ua.official_id = o.id
+            WHERE o.archived = 0 AND o.id = ?");
+    $check2->bind_param("i", $official_id);
+    $check2->execute();
+    if ($check2->get_result()->num_rows > 0) {
+        echo json_encode(["status"=> "error", "message"=> "This user already have an account"]);
+        exit;
+    }
+
     $hash = password_hash($password, PASSWORD_DEFAULT);
 
     $stmt = $conn->prepare("INSERT INTO user_roles_official_accounts 
