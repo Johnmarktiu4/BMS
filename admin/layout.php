@@ -9,7 +9,7 @@ $user_type = $_SESSION['user_type'] ?? 'official'; // 'admin' or 'official'
 $position = $_SESSION['position'] ?? '';
 
 // Define roles
-$is_full_access = ($user_type == 'admin' ) ? true : false;
+$is_full_access = ($user_type == 'admin' || $position == "Barangay Captain") ? true : false;
 $is_secretary = ($position === 'Secretary');
 $is_kagawad = (stripos($position, 'Kagawad') !== false);
 
@@ -213,9 +213,9 @@ $pagePath = "pages/$page.php";
             <?php endif; ?>
 
             <!-- SYSTEM SECTION -->
-            <?php if ($is_full_access || $is_kagawad): ?>
+            <?php if ($is_full_access): ?>
                 <div class="menu-section"><h6>System</h6></div>
-                <?php if ($is_full_access || $is_kagawad): ?>
+                <?php if ($is_full_access): ?>
                     <a href="?page=system_logs" class="menu-item <?php echo $page=='system_logs'?'active':''; ?>">
                         <i class="fas fa-history"></i> Audit Trail
                     </a>
