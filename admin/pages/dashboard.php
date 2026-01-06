@@ -10,7 +10,7 @@ $female_query = $conn->query("SELECT COUNT(*) FROM residents WHERE sex = 'Female
 $female = $female_query ? $female_query->fetch_row()[0] : 0;
 $pwd_query = $conn->query("SELECT COUNT(*) FROM residents WHERE pwd = 'Yes' AND archived = 0");
 $pwd = $pwd_query ? $pwd_query->fetch_row()[0] : 0;
-$senior_query = $conn->query("SELECT COUNT(*) FROM residents WHERE senior = 'Yes' AND archived = 0");
+$senior_query = $conn->query("SELECT COUNT(*) FROM residents WHERE archived = 0 AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) >= 60");
 $senior = $senior_query ? $senior_query->fetch_row()[0] : 0;
 
 $infant_query = $conn->query("SELECT COUNT(*) FROM residents WHERE archived = 0  AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 0 AND 1");
@@ -338,15 +338,15 @@ closeDBConnection($conn);
                    
                     <div class="stat-item"><a onclick="loadResidentList('Senior')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Senior</div><div class="value"><?php echo number_format($senior); ?></div></a></div>
                     <div class="stat-item"><a onclick="loadResidentList('Adult')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Adult</div><div class="value"><?php echo number_format($adult); ?></div></a></div>
-                    <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Teen</div><div class="value"><?php echo number_format($teen); ?></div></div>
-                    <div class="stat-item"><i class="bi bi-person-lines-fill"></i><div class="label">Minor</div><div class="value"><?php echo number_format($minor); ?></div></div>
-                    <div class="stat-item"><i class="bi bi-person-standing"></i><div class="label">Toddler</div><div class="value"><?php echo number_format($toddler); ?></div></div>
-                    <div class="stat-item"><i class="bi bi-person-standing"></i><div class="label">Infant</div><div class="value"><?php echo number_format($infant); ?></div></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Teen')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Teen</div><div class="value"><?php echo number_format($teen); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Minor')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Minor</div><div class="value"><?php echo number_format($minor); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Toddler')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-standing"></i><div class="label">Toddler</div><div class="value"><?php echo number_format($toddler); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Infant')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-standing"></i><div class="label">Infant</div><div class="value"><?php echo number_format($infant); ?></div></a></div>
 
-                    <div class="stat-item"><i class="bi bi-briefcase"></i><div class="label">Employed</div><div class="value"><?php echo number_format($employed); ?></div></div>
-                    <div class="stat-item"><i class="bi bi-person-x"></i><div class="label">Unemployed</div><div class="value"><?php echo number_format($total_residents - $employed); ?></div></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Employed')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-briefcase"></i><div class="label">Employed</div><div class="value"><?php echo number_format($employed); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Unemployed')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-x"></i><div class="label">Unemployed</div><div class="value"><?php echo number_format($total_residents - $employed); ?></div></a></div>
 
-                    <div class="stat-item"><i class="bi bi-person-wheelchair"></i><div class="label">PWD</div><div class="value"><?php echo number_format($pwd); ?></div></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Unemployed')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-wheelchair"></i><div class="label">PWD</div><div class="value"><?php echo number_format($pwd); ?></div></a></div>
                     <div class="stat-item"><i class="bi bi-person-heart"></i><div class="label">Solo Parent</div><div class="value"><?php echo number_format($pwd); ?></div></div>
 
                 </div>
@@ -413,6 +413,7 @@ closeDBConnection($conn);
                                 <tr>
                                     <th>#</th>
                                     <th>Full Name</th>
+                                    <th>Age</th>
                                     <th>Sex</th>
                                     <th>CivilStatus</th>
                                     <th>Address</th>
@@ -457,12 +458,13 @@ closeDBConnection($conn);
             },
             dataType: 'json',
             success: function(response) {
-                if (response.residents) {
+                if (response.residents.length !== 0) {
                     console.log(response.residents);
                     updateResidentListTable(response.residents);
                 }
                 else{
-                    showAlert('danger', response.message || 'Failed to load resident list.');
+                    console.log('else');
+                    updateResidentListTable([]);
                 }
             }
         });
@@ -470,9 +472,10 @@ closeDBConnection($conn);
 
     function updateResidentListTable(data) {
         let tbody = '';
-        
-        if (!data.length) {
-            tbody += '<tr><td colspan="6" class="text-center py-5 text-muted">No resident found.</td></tr>';
+        console.log(data);
+        if (data.length === 0) {
+            tbody += '<tr><td colspan="7" class="text-center py-5 text-muted">No resident found.</td></tr>';
+            $('#residentModalTable tbody').html(tbody);
             return;
         }
         console.log(data);
@@ -481,6 +484,7 @@ closeDBConnection($conn);
                 <tr>
                     <td><strong>${item.id}</strong></td>
                     <td>${item.full_name || '—'}</td>
+                    <td>${item.age || '0'}</td>
                     <td>${item.sex}</td>
                     <td>${item.civil_status}</td>
                     <td>${item.address}</td>

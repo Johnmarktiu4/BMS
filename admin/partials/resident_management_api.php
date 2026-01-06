@@ -441,6 +441,18 @@ switch ($action) {
         if ($type === "Adult"){
             $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 20 AND 59";
         }
+        if ($type === "Teen"){
+            $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 13 AND 19";
+        }
+        if ($type === "Minor"){
+            $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 4 AND 12";
+        }
+        if ($type === "Toddler"){
+            $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 1 AND 3";
+        }
+        if ($type === "Infant"){
+            $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) BETWEEN 0 AND 1";
+        }
         if ($type === "PWDMale"){
             $where .= " AND pwd= 'Yes' and sex= 'Male'";
         }
@@ -453,12 +465,22 @@ switch ($action) {
         if ($type === "SeniorFemale"){
             $where .= " AND ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) >= 60 AND sex= 'Female'";
         }
-        $sql = "SELECT id, full_name, sex, civil_status, address, contact_number FROM residents $where 
+        if ($type === "Employed"){
+            $where .= " AND employment_status = 'Employed'";
+        }
+        if ($type === "Unemployed"){
+            $where .= " AND employment_status = 'Unemployed'";
+        }
+        if ($type === "PWD"){
+            $where .= " AND pwd = 'Yes'";
+        }
+        $sql = "SELECT id, full_name, date_of_birth, sex, civil_status, address, contact_number FROM residents $where 
                 ORDER BY id DESC";
         
         $result = $conn->query($sql);
         $residents = [];
         while ($row = $result->fetch_assoc()) {
+            $row['age'] = (new DateTime())->diff(new DateTime($row['date_of_birth']))->y;
             $residents[] = $row;
         }
 
