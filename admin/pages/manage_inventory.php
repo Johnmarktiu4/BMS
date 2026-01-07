@@ -12,13 +12,13 @@ require_once 'partials/db_conn.php';
                     <p class="text-muted mb-0">Add and monitor barangay inventory items</p>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-success btn-md action-btn" data-bs-toggle="modal" data-bs-target="#stockMonitoringModal">
+                    <button class="btn btn-success btn-md action-btn" data-bs-toggle="modal" data-bs-target="#stockMonitoringModal" onclick="loadStockInOutMonitoring(1)">
                         <i class="fas fa-chart-line me-2"></i>Stock Monitoring
                     </button>
                     <button class="btn btn-success btn-md action-btn" data-bs-toggle="modal" data-bs-target="#stockInModal">
                         <i class="fas fa-plus-circle me-2"></i>Stock In
                     </button>
-                    <button class="btn btn-warning btn-md action-btn" data-bs-toggle="modal" data-bs-target="#stockOutModal">
+                    <button class="btn btn-warning btn-md action-btn" data-bs-toggle="modal" data-bs-target="#stockOutModal" onclick="loadInventory()">
                         <i class="fas fa-minus-circle me-2"></i>Stock Out
                     </button>
                     <button class="btn btn-success btn-md action-btn" data-bs-toggle="modal" data-bs-target="#addItemModal">
@@ -53,6 +53,7 @@ require_once 'partials/db_conn.php';
                                     <th>Replaced</th>
                                     <th>Declared Value (per unit)</th>
                                     <th>Remarks</th>
+                                    <th>Status</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -128,7 +129,7 @@ require_once 'partials/db_conn.php';
                             <div id="itemSearchDropdown" class="shadow border rounded position-absolute top-100 start-0 w-100" style="z-index: 2000; max-height: 300px; overflow-y: auto; display: none; background: white;"></div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Select Item *</label>
+                            <label class="form-label">Selected Item *</label>
                             <input type="text" class="form-control" id="itemmss" name="itemmss" disabled>
                         </div>
                         <div class="mb-3">
@@ -219,7 +220,7 @@ require_once 'partials/db_conn.php';
                             <div id="itemSearchDropdown2" class="shadow border rounded position-absolute top-100 start-0 w-100" style="z-index: 2000; max-height: 300px; overflow-y: auto; display: none; background: white;"></div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Select Item *</label>
+                            <label class="form-label">Selected Item *</label>
                             <input type="text" class="form-control" id="itemmssOut" name="itemmssOut" disabled>
                         </div>
                         <div class="mb-3">
@@ -292,22 +293,21 @@ function loadStockMonitoring() {
 function loadInventory() {
     $.post('partials/inventory_management_api.php', { action: 'fetch_inventory', limit: 999 }, function(r) {
         if (r.status === 'success') {
-            inventory = r.data.items.filter(i => parseInt(i.current_stock) > 0);
+            inventory = r.data.items.filter(i => parseInt(i.current_stock) >= 0);
+            console.log('inventory search', inventory);
         }
     }, 'json');
 }
 
-function loadStockInOutMonitoring(page, search = 0) {
+function loadStockInOutMonitoring(page) {
     currentPage = page;
-    console.log('ss', search);
     $.ajax({
         url: 'partials/inventory_management_api.php',
         type: 'POST',
-        data: { action: 'fetch_stock_in_out_monitoring', page, search, limit: 10 },
+        data: { action: 'fetch_stock_in_out_monitoring', page, limit: 10 },
         dataType: 'json',
         success: function(response) {
             if (response.status === 'success') {
-                console.log('ss', search);
                 console.log(response.data);
                 stockInOutMonitoringTable(response.data, currentPage, response.total);
             } else {
@@ -357,7 +357,7 @@ function getQuantity(){
     const expiration_date = $('#stockOutExpiredItemSelect').val();
     $.post('partials/inventory_management_api.php', {
         action: 'get_quantity_by_expiration',
-        item_id: item_id,
+        item_id: selectedItems[0].id,
         expiration_date: expiration_date
     }, r => {
         if (r.status === 'success') {
@@ -378,6 +378,7 @@ function selectExpirationDate(){
         action: 'get_expiration_dates',
         item_id: item_id
     }, r => {
+        console.log(r.data);
         if (r.status === 'success') {
             const expirationSelect = $('#stockOutExpiredItemSelect');
             expirationSelect.empty();
@@ -385,7 +386,7 @@ function selectExpirationDate(){
             r.data.forEach(date => {
                 expirationSelect.append(`<option value="${date.expiration_date}">${date.expiration_date}</option>`);
             });
-            isWithExpirationSO();
+            
         }
         else{
             showAlert('danger', response.message || 'Failed to load expiration dates.');
@@ -416,7 +417,7 @@ function isWithExpiration() {
 }
 
 function isWithExpirationSO() {
-    const item_id = $('#stockOutItemSelect').val();
+    const item_id = selectedItems[0].id;
     $.post('partials/inventory_management_api.php', {
         action: 'is_with_expiration',
         item_id: item_id
@@ -447,7 +448,8 @@ function updateStockMonitoringTable(items) {
     items.forEach(item => {
         const unitValue = item.declared_value ? parseFloat(item.declared_value) : 0;
         const totalValue = unitValue * item.current_stock;
-
+        const archi = item.archived == 0 ? 'danger' : 'primary';
+        const archivedStatus = item.archived == 1 ? 'Inactive' : 'Active';
         tbody.append(`
             <tr>
                 <td><strong>${item.item_name}</strong></td>
@@ -459,6 +461,7 @@ function updateStockMonitoringTable(items) {
                 <td class="text-center">${item.qty_replaced}</td>
                 <td class="text-center">${unitValue > 0 ? '₱' + unitValue.toFixed(2) : '—'}</td>
                 <td>${item.remarks || '—'}</td>
+                <td>${archivedStatus}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#stockMonitoringModal" onclick="loadStockInOutMonitoring2(${item.id})" title="View">
                         <i class="fas fa-eye"></i>
@@ -466,7 +469,7 @@ function updateStockMonitoringTable(items) {
                     <button class="btn btn-sm btn-outline-primary me-1" onclick="editItem(${item.id})" title="Edit">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="archiveItem(${item.id})" title="Archive">
+                    <button class="btn btn-sm btn-outline-${archi}" onclick="archiveItem(${item.id})" title="${item.archived === 1 ? 'Active' : 'Inactive'}">
                         <i class="fas fa-archive"></i>
                     </button>
                 </td>
@@ -477,10 +480,13 @@ function updateStockMonitoringTable(items) {
 
 function stockInOutMonitoringTable(items, page, total) {
     console.log(items);
+    console.log(items.length);
     let tbody = '';
-    
-    if (!items.length) {
+    loadInventory();
+    if (items.length === 0) {
         tbody += '<tr><td colspan="6" class="text-center py-5 text-muted">No stock movement items found.</td></tr>';
+        $('#stockInOutMonitoringTable tbody').html(tbody);
+        updatePagination(0, 10, 1);
         return;
     }
     items.forEach(item => {
@@ -543,6 +549,7 @@ function saveItem(proceedToStock = false) {
                 form.reset();
                 showAlert('success', r.message);
                 loadStockMonitoring();
+                loadInventory();
                 if (proceedToStock && r.item_id) {
                     setTimeout(() => $('#stockInItemSelect').val(r.item_id) && $('#stockInModal').modal('show'), 300);
                 }
@@ -664,6 +671,7 @@ function escapeHtml(text) {
 }
 
 function addItemToBorrow(id, name, stock) {
+    selectedItems = [];
     if (selectedItems.find(x => x.id == id)) {
         alert('Item already added!');
         return;
@@ -676,6 +684,7 @@ function addItemToBorrow(id, name, stock) {
 }
 
 function addItemToBorrow2(id, name, stock) {
+    selectedItems = [];
     if (selectedItems.find(x => x.id == id)) {
         alert('Item already added!');
         return;
@@ -692,6 +701,7 @@ function renderSelectedItems2() {
     inputElement.value = selectedItems[0].name;
     const inputElement2 = document.getElementById("itemmssOut");
     inputElement2.value = selectedItems[0].name;
+    isWithExpirationSO();
     selectExpirationDate();
 }
 
@@ -729,7 +739,8 @@ function renderSelectedItems() {
         const query = this.value.trim().toLowerCase();
         const $dd = $('#itemSearchDropdown').empty();
         if (!query) { $dd.hide(); return; }
-        const matches = inventory.filter(i => i.item_name.toLowerCase().includes(query) && parseInt(i.current_stock) > 0);
+        console.log(inventory);
+        const matches = inventory.filter(i => i.item_name.toLowerCase().includes(query) && parseInt(i.current_stock) >= 0);
         if (matches.length === 0) {
             $dd.append('<div class="dropdown-item text-muted">No available items</div>').show();
             return;

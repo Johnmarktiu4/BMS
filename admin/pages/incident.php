@@ -289,11 +289,11 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Date Reported <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control form-control-lg" id="date_reported" required>
+                                <input type="date" class="form-control form-control-lg" id="date_reported" max="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Date Incident <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control form-control-lg" id="date_incident" required>
+                                <input type="date" class="form-control form-control-lg" max="<?= date('Y-m-d') ?>" id="date_incident" required>
                             </div>
                         </div>
 
@@ -555,7 +555,6 @@ const persons = Array.isArray(i.persons_involved) && i.persons_involved.length
                 $tbody.append(`
                 <tr>
                     <td><strong>${escapeHtml(i.case_id)}</strong></td>
-                    <td><span class="badge ${statusBadge}">${i.status}</span></td>
                     <td><small>${escapeHtml(i.nature_of_incident || '—')}</small></td>
                     <td><small>${persons}</small></td>
                     <td>${escapeHtml(i.official_name || '—')}</td>
@@ -584,9 +583,10 @@ const persons = Array.isArray(i.persons_involved) && i.persons_involved.length
                 if (r.success) renderIncidents(r.data);
             }, 'json');
         }
+        const officialDuty = "<?php echo $_SESSION['full_name']; ?>";
 
-        window.downloadSingleReport = id => window.open('partials/generate_incident_pdf.php?id=' + id, '_blank');
-        window.downloadAllReports = () => window.open('partials/generate_incident_pdf.php?all=1', '_blank');
+        window.downloadSingleReport = id => window.open('partials/generate_incident_pdf.php?id=' + id +'&full_name=' + officialDuty, '_blank');
+        window.downloadAllReports = () => window.open('partials/generate_incident_pdf.php?all=1' +'&full_name=' + officialDuty, '_blank');
 
         $('#incidentForm').on('submit', function(e) {
             e.preventDefault();
@@ -703,6 +703,11 @@ const persons = Array.isArray(i.persons_involved) && i.persons_involved.length
             const today = new Date().toISOString().split('T')[0];
             $('#date_reported').val(today);
             $('#incidentModal').on('hidden.bs.modal', resetForm);
+            $('#nonResidentContact').on('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            e.target.value = value;
+        });
         });
     </script>
 </body>

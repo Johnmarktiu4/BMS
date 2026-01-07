@@ -192,7 +192,7 @@
                 <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#blotterModal">
                     <i class="fas fa-plus me-2"></i> File Complaint
                 </button>
-                <a href="partials/generate_blotter_pdf.php" target="_blank" class="btn btn-success shadow-sm text-white">
+                <a href="partials/generate_blotter_pdf.php?full_name=<?php echo $_SESSION['full_name']; ?>" target="_blank" class="btn btn-success shadow-sm text-white">
                     <i class="fas fa-print me-2"></i> Print
                 </a>
             </div>
@@ -269,7 +269,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Date Filed *</label>
-                                <input type="date" class="form-control form-control-lg" id="date_filed" min="<?=  date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" required>
+                                <input type="date" class="form-control form-control-lg" id="date_filed" max="<?= date('Y-m-d') ?>" required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Incident Time *</label>
@@ -910,6 +910,7 @@
                 console.log('can1', canRecordStatus);
                 console.log('can2', canRecord);
                 console.log('status', b.status);
+                const officialDuty = "<?php echo $_SESSION['full_name']; ?>";
 
                 $tbody.append(`
             <tr>
@@ -922,7 +923,7 @@
                 <td><small>${b.date_filed || '—'}</small></td>
                 <td class="no-print text-center">
                     <div class="btn-group-vertical btn-group-sm d-block">
-                        <a href="partials/generate_blotter_pdf.php?id=${b.id}" target="_blank" class="btn btn-outline-primary mb-1">
+                        <a href="partials/generate_blotter_pdf.php?id=${b.id}&full_name=${officialDuty}" target="_blank" class="btn btn-outline-primary mb-1">
                             <i class="fas fa-print"></i> Print
                         </a>
                         ${summon ? `<a href="partials/generate_summon_pdf.php?id=${b.id}&full_name=${official_full_name}" target="_blank" class="btn btn-outline-primary mb-1">

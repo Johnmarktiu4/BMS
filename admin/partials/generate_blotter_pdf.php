@@ -155,9 +155,9 @@ foreach ($blotters as $b) {
     // Row background
     $pdf->SetFillColor(245, 255, 245);
     $pdf->Cell($col_case, $rowHeight, $b['case_id'], 1, 0, 'C', true);
-    $pdf->MultiCell($col_comp, $rowHeight, $compText, 1, 'L', true, 0);
-    $pdf->MultiCell($col_def, $rowHeight, $defText, 1, 'L', true, 0);
-    $pdf->Cell($col_nature, $rowHeight, $nature, 1, 0, 'L', true);
+    $pdf->MultiCell($col_comp, $rowHeight, $compText, 1, 'C', true, 0);
+    $pdf->MultiCell($col_def, $rowHeight, $defText, 1, 'C', true, 0);
+    $pdf->Cell($col_nature, $rowHeight, $nature, 1, 0, 'C', true);
     $pdf->Cell($col_status, $rowHeight, $statusText, 1, 0, 'C', true);
     $pdf->Cell($col_hear, $rowHeight, $hearings, 1, 0, 'C', true);
     $pdf->Cell($col_date, $rowHeight, $dateFiled, 1, 1, 'C', true);

@@ -463,6 +463,11 @@
                 let tbody = '';
                 data.terms.forEach(term => {    
                     const status = term.status == 1 ? 'Active' : 'Inactive';
+                    let stat = false;
+                    if (status === 'Active')
+                    {
+                        stat = true;
+                    }
                     const statusBadge = status == 'Active' ? 'bg-primary' : 'bg-secondary';
                     tbody += `
                 <tr>
@@ -473,8 +478,8 @@
                     <td><span class="badge ${statusBadge}">${status}</span></td>
                     <td>
                         <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-outline-success" title="${status === 'Active' ? 'Inactive' : 'Active'}" onclick="editTerm(${term.id})"><i class="fas fa-edit"></i></button>
-                            <button type="button" class="btn btn-outline-danger" title="Archive" onclick="openArchiveModal(${term.id})"><i class="fas fa-sync"></i></button>
+                            <button type="button" class="btn btn-outline-success" title="Edit" onclick="editTerm(${term.id})"><i class="fas fa-edit"></i></button>
+                            ${stat ? `` : `<button type="button" class="btn btn-outline-danger" title="${status === 'Active' ? 'Inactive' : 'Active'}" onclick="openArchiveModal(${term.id})"><i class="fas fa-sync"></i></button>`}
                         </div>
                     </td>
                 </tr>`;

@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile']) && 
                         <?php endif; ?>
                     <?php else: ?>
                         <div class="col-12 text-center">
-                            <p class="lead">Welcome, Administrator!</p>
+                            <p class="lead">Welcome, <?= htmlspecialchars($position) ?>!</p>
                         </div>
                     <?php endif; ?>
                 </div>

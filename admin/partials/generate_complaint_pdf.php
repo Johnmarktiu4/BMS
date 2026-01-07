@@ -11,6 +11,7 @@ if (!$conn) die('Database connection failed.');
 // ===================================================================
 // SINGLE OR ALL COMPLAINTS
 // ===================================================================
+$official_fullname = $_GET['full_name'] ?? null;
 $complaint_id = $_GET['id'] ?? null;
 $is_single = $complaint_id && is_numeric($complaint_id);
 
@@ -182,16 +183,16 @@ foreach ($complaints as $c) {
 
     $pdf->Cell($w[0], $rowHeight, $c['case_id'], 1, 0, 'C', true);
     $pdf->Cell($w[1], $rowHeight, $statusText, 1, 0, 'C', true);
-    $pdf->MultiCell($w[2], $rowHeight, $compText, 1, 'L', true, 0);
-    $pdf->MultiCell($w[3], $rowHeight, $defText, 1, 'L', true, 0);
-    $pdf->Cell($w[4], $rowHeight, $c['official_name'], 1, 0, 'L', true);
+    $pdf->MultiCell($w[2], $rowHeight, $compText, 1, 'C', true, 0);
+    $pdf->MultiCell($w[3], $rowHeight, $defText, 1, 'C', true, 0);
+    $pdf->Cell($w[4], $rowHeight, $c['official_name'], 1, 0, 'C', true);
     $pdf->Cell($w[5], $rowHeight, date('M j, Y', strtotime($c['date_reported'])), 1, 0, 'C', true);
     $pdf->Cell($w[6], $rowHeight, date('M j, Y', strtotime($c['date_incident'])), 1, 1, 'C', true);
 }
 // === ADDED: Prepared By (appears after all table data) ===
 $pdf->Ln(15);
 $pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(0, 10, 'Prepared By : MARIO MOJICA', 0, 1, 'R');
+$pdf->Cell(0, 10, 'Prepared By : ' . $official_fullname, 0, 1, 'R');
 // ===================================================================
 // OUTPUT
 // ===================================================================

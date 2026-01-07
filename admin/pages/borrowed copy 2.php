@@ -79,7 +79,6 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
                                     <th>Borrowed Qty</th>
                                     <th>Returned Qty</th>
                                     <th>Replaced Qty</th>
-                                    <th>Paid Qty</th>
                                     <th>Borrow Date</th>
                                     <th>Returned Date</th>
                                     <th>Details</th>
@@ -243,74 +242,6 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
     </div>
 </div>
 
-<div class="modal fade" id="returnModal2" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-undo"></i> Record Replace</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Borrower: <strong id="return_borrower_name"></strong></h6>
-                <div class="table-responsive mt-3">
-                    <table class="table table-bordered" id="returnItemsTable2">
-                        <thead class="table-primary">
-                            <tr>
-                                <th>Item</th>
-                                <th>Borrowed Qty</th>
-                                <th>Qty to be Replace</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div class="mt-3">
-                    <label>Remarks</label>
-                    <textarea class="form-control" id="return_remarks" rows="3"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveReplace()">Confirm Return</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="returnModal3" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-undo"></i> Record Paid</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Borrower: <strong id="return_borrower_name"></strong></h6>
-                <div class="table-responsive mt-3">
-                    <table class="table table-bordered" id="returnItemsTable3">
-                        <thead class="table-primary">
-                            <tr>
-                                <th>Item</th>
-                                <th>Borrowed Qty</th>
-                                <th>Qty to be Paid</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div class="mt-3">
-                    <label>Remarks</label>
-                    <textarea class="form-control" id="return_remarks" rows="3"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="savePay()">Confirm Return</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Replace Modal -->
 <div class="modal fade" id="replaceModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -321,7 +252,6 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
             </div>
             <div class="modal-body">
                 <input type="hidden" id="replace_transaction_id">
-                <input type="hidden" id="inventory_id">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label>Borrower</label>
@@ -447,8 +377,6 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
 // Global variables
 let residents = [], inventory = [], allTransactions = [], selectedItems = [];
 let currentReturnData = [];
-let currentReplaceData = [];
-let currentPaidData = [];
 
 $(document).ready(function() {
     loadResidents();
@@ -611,8 +539,8 @@ function updateTables() {
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="viewBorrowedItems('${escapeHtml(g.name)}', ${g.id || 'null'})">View</button>
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="viewBorrowedItems('${escapeHtml(g.name)}', ${g.id || 'null'})">Edit</button>
                         <button class="btn btn-sm btn-success me-1" onclick="openReturnModal('${escapeHtml(g.name)}', ${g.id || 'null'})">Return</button>
-                        <button class="btn btn-sm btn-info me-1" onclick="openReturnModal2('${escapeHtml(g.name)}', ${g.id || 'null'})">Replace</button>
-                        <button class="btn btn-sm btn-warning" onclick="openReturnModal3('${escapeHtml(g.name)}', ${g.id || 'null'})">Pay</button>
+                        <button class="btn btn-sm btn-info me-1" onclick="openReplaceModal(${g.items[0].id}, '${escapeHtml(g.name)}', '${escapeHtml(g.items[0].item_name)}', ${totalRemaining})">Replace</button>
+                        <button class="btn btn-sm btn-warning" onclick="openPaymentModal(${g.items[0].id}, '${escapeHtml(g.name)}', '${escapeHtml(g.items[0].item_name)}', ${totalRemaining}, ${g.items[0].declared_value})">Pay</button>
                     </td>
                 </tr>
             `);
@@ -640,7 +568,6 @@ function updateTables() {
                 <td><strong>${t.quantity}</strong></td>
                 <td><strong>${t.borrowed_quantity}</strong></td>
                 <td><strong>${t.replaced_quantity}</strong></td>
-                <td><strong>${t.pay_quantity}</strong></td>
                 <td>${formatDate(t.transaction_date)}</td>
                 <td>${t.returned_date && t.returned_date !== '0000-00-00' 
                     ? formatDate(t.returned_date) 
@@ -812,68 +739,6 @@ function openReturnModal(borrowerName, borrowerId) {
     new bootstrap.Modal(document.getElementById('returnModal')).show();
 }
 
-function openReturnModal2(borrowerName, borrowerId) {
-    $('#return_borrower_name').text(borrowerName);
-    currentReplaceData = allTransactions
-        .filter(t => t.action_type === 'Borrow' && !t.returned_date && (t.borrower_id == borrowerId || t.borrower_name === borrowerName))
-        .map(t => ({ ...t, replace: t.quantity}));
-
-    const tbody = $('#returnItemsTable2 tbody').empty();
-    currentReplaceData.forEach(item => {
-        tbody.append(`
-            <tr>
-                <td>${escapeHtml(item.item_name)}</td>
-                <td>${item.quantity}</td>
-                <td><input type="number" class="form-control form-control-sm replace-qty" min="0" max="${item.quantity}" value="${item.quantity}" data-id="${item.id}"></td>
-            </tr>
-        `);
-    });
-
-    $('#returnItemsTable2').off('input').on('input', '.replace-qty', function() {
-        const id = $(this).data('id');
-        const replace = parseInt($(this).closest('tr').find('.replace-qty').val()) || 0;
-        const total = replace;
-        const max = currentReplaceData.find(x => x.id == id).quantity;
-        console.log(total);
-        if (total > max) {
-            $(this).val(max - good);
-        }
-    });
-
-    new bootstrap.Modal(document.getElementById('returnModal2')).show();
-}
-
-function openReturnModal3(borrowerName, borrowerId) {
-    $('#return_borrower_name').text(borrowerName);
-    currentPaidData = allTransactions
-        .filter(t => t.action_type === 'Borrow' && !t.returned_date && (t.borrower_id == borrowerId || t.borrower_name === borrowerName))
-        .map(t => ({ ...t, pay: t.quantity}));
-
-    const tbody = $('#returnItemsTable3 tbody').empty();
-    currentPaidData.forEach(item => {
-        tbody.append(`
-            <tr>
-                <td>${escapeHtml(item.item_name)}</td>
-                <td>${item.quantity}</td>
-                <td><input type="number" class="form-control form-control-sm pay-qty" min="0" max="${item.quantity}" value="${item.quantity}" data-id="${item.id}"></td>
-            </tr>
-        `);
-    });
-
-    $('#returnItemsTable3').off('input').on('input', '.pay-qty', function() {
-        const id = $(this).data('id');
-        const pay = parseInt($(this).closest('tr').find('.pay-qty').val()) || 0;
-        const total = pay;
-        const max = currentPaidData.find(x => x.id == id).quantity;
-        console.log(total);
-        if (total > max) {
-            $(this).val(max - pay);
-        }
-    });
-
-    new bootstrap.Modal(document.getElementById('returnModal3')).show();
-}
-
 function saveReturn() {
     const returns = [];
     $('#returnItemsTable tbody tr').each(function() {
@@ -895,60 +760,6 @@ function saveReturn() {
             $('#returnModal').modal('hide');
             loadAllTransactions();
             alert('Return processed successfully!');
-        } else {
-            alert('Error: ' + r.message);
-        }
-    }, 'json');
-}
-
-function saveReplace() {
-    const replaces = [];
-    $('#returnItemsTable2 tbody tr').each(function() {
-        const id = $(this).find('.replace-qty').data('id');
-        const replace = parseInt($(this).find('.replace-qty').val()) || 0;
-        if (replace > 0) {
-            replaces.push({ transaction_id: id, replace_qty: replace });
-        }
-    });
-
-    if (replaces.length === 0) return alert('No items to replace');
-
-    $.post('partials/inventory_management_api.php', {
-        action: 'replace_multiple',
-        replace: JSON.stringify(replaces),
-        remarks: $('#return_remarks').val()
-    }, function(r) {
-        if (r.status === 'success') {
-            $('#returnModal2').modal('hide');
-            loadAllTransactions();
-            alert('Replace processed successfully!');
-        } else {
-            alert('Error: ' + r.message);
-        }
-    }, 'json');
-}
-
-function savePay() {
-    const pays = [];
-    $('#returnItemsTable3 tbody tr').each(function() {
-        const id = $(this).find('.pay-qty').data('id');
-        const pay = parseInt($(this).find('.pay-qty').val()) || 0;
-        if (pay > 0) {
-            pays.push({ transaction_id: id, pay_qty: pay });
-        }
-    });
-
-    if (pays.length === 0) return alert('No items to pay');
-
-    $.post('partials/inventory_management_api.php', {
-        action: 'pay_multiple',
-        pay: JSON.stringify(pays),
-        remarks: $('#return_remarks').val()
-    }, function(r) {
-        if (r.status === 'success') {
-            $('#returnModal3').modal('hide');
-            loadAllTransactions();
-            alert('Payment processed successfully!');
         } else {
             alert('Error: ' + r.message);
         }

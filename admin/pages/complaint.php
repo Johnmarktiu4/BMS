@@ -84,7 +84,7 @@
     <button class="btn btn-success btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#complaintModal">
         <i class="fas fa-plus me-2"></i> Add Blotter
     </button>
-    <a href="partials/generate_complaint_pdf.php" target="_blank" class="btn btn-success btn-lg shadow-sm">
+    <a href="partials/generate_complaint_pdf.php?full_name=<?php echo $_SESSION['full_name']; ?>" target="_blank" class="btn btn-success btn-lg shadow-sm">
         <i class="fas fa-print me-2"></i> Print  
     </a>
 </div>
@@ -167,11 +167,11 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Date Reported <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control form-control-lg" id="date_reported" required>
+                            <input type="date" class="form-control form-control-lg" id="date_reported" max="<?= date('Y-m-d') ?>" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Date of Incident <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control form-control-lg" id="date_incident" required>
+                            <input type="date" class="form-control form-control-lg" id="date_incident" max="<?= date('Y-m-d') ?>" required>
                         </div>
                     </div>
 
@@ -585,6 +585,7 @@ function renderComplaints(data) {
         $tbody.append('<tr><td colspan="8" class="text-center py-5 text-muted fs-4">No blotter records found</td></tr>');
         return;
     }
+    const officialDuty = "<?php echo $_SESSION['full_name']; ?>";
 
     data.forEach(c => {
         const comp = c.complainants.map(p => 
@@ -608,7 +609,7 @@ $tbody.append(`
         <td>${c.date_reported}</td>
         <td>${c.date_incident}</td>
         <td>
-            <a href="partials/generate_complaint_pdf.php?id=${c.id}" 
+            <a href="partials/generate_complaint_pdf.php?id=${c.id}&full_name=${officialDuty}" 
                target="_blank" 
                class="btn btn-sm btn-outline-info" 
                title="Print Complaint Report">
@@ -659,6 +660,12 @@ $tbody.append(`
         const today = new Date().toISOString().split('T')[0];
         $('#date_reported, #date_incident').val(today);
         $('#complaintModal').on('hidden.bs.modal', resetForm);
+        const nonResidentContact = document.querySelectorAll('.non-resident-contact');
+        $(nonResidentContact).on('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            e.target.value = value;
+        });
     });
 </script>
 </body>

@@ -531,6 +531,7 @@
         let residents = [];
         let selectedResident = null;
         let captain = '';
+        let api = 'partials/get_residents_up.php';
 
         get_captain();
 
@@ -582,7 +583,7 @@
         get_officials();
 
         function loadResidents() {
-            fetch('partials/get_residents.php')
+            fetch(api)
                 .then(r => r.json())
                 .then(data => {
                     residents = data;
@@ -653,6 +654,14 @@
         // === CERTIFICATE GENERATION (FULL ORIGINAL HTML) ===
         document.getElementById('certType').addEventListener('change', function() {
             document.getElementById('residencyYearsDiv').style.display = this.value === 'residency' ? 'block' : 'none';
+            const test = document.getElementById('certType').value;
+            if (this.value === 'residency'){
+                api = 'partials/get_residents.php';
+            }
+            else{
+                api = 'partials/get_residents_up.php';
+            }
+            loadResidents();
         });
 
         function generateCertificate() {

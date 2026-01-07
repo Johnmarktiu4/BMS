@@ -29,7 +29,7 @@ if (!$is_full_access) {
         $allowed_pages = array_diff($allowed_pages, ['role_accounts', 'backup_restore']);
     } elseif ($is_kagawad) {
         // Kagawad: ONLY these pages
-        $allowed_pages = ['dashboard', 'resident_management', 'household', 'archive_residents', 'certificate_management', 'manage_inventory', 'borrowed', 'case_report', 'complaint', 'incident', 'blotter', 'mapping', 'profile'];
+        $allowed_pages = ['dashboard', 'resident_management', 'household', 'archive_residents', 'manage_inventory', 'borrowed', 'case_report', 'complaint', 'incident', 'blotter', 'mapping', 'profile'];
     } else {
         // Other officials (default)
         $allowed_pages = ['certificate_management', 'manage_inventory', 'borrowed'];
@@ -161,7 +161,7 @@ $pagePath = "pages/$page.php";
             <?php endif; ?>
 
             <!-- INFORMATIONAL RESOURCES - Already correct -->
-            <?php if ($is_full_access || $is_secretary || $is_kagawad): ?>
+            <?php if ($is_full_access || $is_secretary): ?>
                 <div class="menu-section"><h6>Informational Resources</h6></div>
                 <a href="?page=certificate_management" class="menu-item <?php echo $page=='certificate_management'?'active':''; ?>">
                     <i class="fas fa-certificate"></i> Certificate Management

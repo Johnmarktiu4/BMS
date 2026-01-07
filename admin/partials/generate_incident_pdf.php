@@ -11,6 +11,7 @@ if (!$conn) die('Database connection failed.');
 // ===================================================================
 // SINGLE OR ALL INCIDENTS
 // ===================================================================
+$official_fullname = $_GET['full_name'] ?? null;
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $id = (int)$_GET['id'];
     $stmt = $conn->prepare("
@@ -154,15 +155,15 @@ foreach ($incidents as $i) {
     $pdf->SetFillColor(240, 248, 240);
     $pdf->Cell(30, $rowHeight, htmlspecialchars($i['case_id']), 1, 0, 'C', true);
     $pdf->Cell(28, $rowHeight, $status, 1, 0, 'C', true);
-    $pdf->Cell(70, $rowHeight, $nature, 1, 0, 'L', true);
-    $pdf->MultiCell(70, $rowHeight, $personText, 1, 'L', true, 0);
-    $pdf->MultiCell(45, $rowHeight, $official, 1, 'L', true, 0);
+    $pdf->Cell(70, $rowHeight, $nature, 1, 0, 'C', true);
+    $pdf->MultiCell(70, $rowHeight, $personText, 1, 'C', true, 0);
+    $pdf->MultiCell(45, $rowHeight, $official, 1, 'C', true, 0);
     $pdf->Cell(35, $rowHeight, $date, 1, 1, 'C', true);
 }
 // === ADDED: Prepared By (appears after all table data) ===
 $pdf->Ln(15);
 $pdf->SetFont('helvetica', 'B', 12);
-$pdf->Cell(0, 10, 'Prepared By : MARIO MOJICA', 0, 1, 'R');
+$pdf->Cell(0, 10, 'Prepared By : '. $official_fullname, 0, 1, 'R');
 // ===================================================================
 // OUTPUT PDF
 // ===================================================================

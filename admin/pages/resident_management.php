@@ -20,6 +20,9 @@
         .rounded-circle { border-radius: 50% !important; }
         #cameraFeed { max-width: 100%; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     </style>
+    <script>
+    let printSearch = '';
+    </script>
 </head>
 <body>
 <div class="container-fluid">
@@ -863,8 +866,6 @@
 
             }
             $('#employmentStatus').prop('disabled', true);
-            $('#soloParentYes').prop('disabled', true);
-            $('#soloParentNo').prop('disabled', true);
             $('#headOfFamily').value = 'Select Relationship';
             updateRelationShipToHeadByAge(age);
             updateRelationShipToEmergencyByAge(age);
@@ -882,6 +883,11 @@
                     showAlert('danger', 'Invalid Age for the head of the family');
                     document.getElementById('headOfFamily').checked = false;
                     toggleFamilyControls();
+                }
+                if (age < 10)
+                {
+                    $('#soloParentYes').prop('disabled', true);
+                    $('#soloParentNo').prop('disabled', true);
                 }
             }
         }
@@ -1089,6 +1095,18 @@
         const status = $('#statusFilter').val();
         const limit = $('#entriesSelect').val();
         const ageSearch = $('#categoryAge').val();
+        if (sex !== ''){
+            printSearch = sex;
+        }
+        if (search !== ''){
+            printSearch = sex;
+        }
+        if (status !== ''){
+            printSearch = sex;
+        }
+        if (ageSearch !== ''){
+            printSearch = sex;
+        }
         $.ajax({
             url: 'partials/resident_management_api.php',
             data: { action: 'get_residents', search, sex, status, page, limit, ageSearch },

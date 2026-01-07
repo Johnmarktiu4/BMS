@@ -66,10 +66,9 @@ elseif ($action === 'fetch_stock_monitoring') {
             i.id, i.item_name, i.description,
             i.qty_on_hand, i.qty_received, i.qty_lost, i.qty_damaged, i.qty_replaced,
             i.current_stock, i.remarks, i.status,
-            COALESCE(m.value, 0) AS declared_value
+            COALESCE(m.value, 0) AS declared_value, i.archived
         FROM inventory i
         LEFT JOIN item_meta m ON i.id = m.inventory_id AND m.meta_key = 'declared_value'
-        WHERE i.archived = 0
         ORDER BY i.item_name ASC
     ";
     $result = $conn->query($sql);
@@ -90,6 +89,9 @@ elseif ($action === 'fetch_all_transactions') {
             t.inventory_id,
             t.action_type,
             t.quantity,
+            t.borrowed_quantity,
+            t.replaced_quantity,
+            t.pay_quantity,
             t.transacted_by,
             t.transaction_date,
             t.return_date,
@@ -97,6 +99,7 @@ elseif ($action === 'fetch_all_transactions') {
             t.return_period_days,
             t.remarks,
             i.item_name,
+            t.info,
             COALESCE(m.value, 0) AS declared_value,
             COALESCE(r.full_name, b.name, 'Unknown') AS borrower_name,
             COALESCE(r.id, b.id) AS borrower_id
@@ -349,8 +352,9 @@ elseif ($action === 'add_transaction') {
         // Log transaction
         $log_action = ($action_type === 'Replace') ? 'Replace' : 'Broken';
         $conn->query("INSERT INTO inventory_transactions
-                      (inventory_id, action_type, quantity, transaction_date, remarks)
-                      VALUES ($inventory_id, '$log_action', $quantity, '$transaction_date', '$remarks')");
+                      (inventory_id, action_type, quantity, borrowed_quantity, replaced_quantity, pay_quantity, transaction_date, remarks)
+                      VALUES ($inventory_id, '$log_action', $quantity, 0, 0, 0, '$transaction_date', '$remarks')");
+        
         // Log stock movement
         $conn->query("INSERT INTO stock_movement
                        (item_id, qty, movement_type, movement_date, remarks, created_by)
@@ -423,9 +427,9 @@ elseif ($action === 'borrow_multiple') {
                           status = IF(current_stock - $quantity > 0, 'In Stock', 'Out of Stock')
                           WHERE id = $inventory_id");
             $conn->query("INSERT INTO inventory_transactions
-                          (inventory_id, action_type, quantity, transacted_by, transaction_date,
+                          (inventory_id, action_type, quantity, borrowed_quantity, replaced_quantity, transacted_by, transaction_date,
                            return_date, remarks, borrower_id)
-                          VALUES ($inventory_id, 'Borrow', $quantity, '$transacted_by', '$transaction_date',
+                          VALUES ($inventory_id, 'Borrow', $quantity, 0, 0, '$transacted_by', '$transaction_date',
                                   '$return_date', '$remarks', $borrower_id)");
         }
         $conn->commit();
@@ -458,7 +462,7 @@ elseif ($action === 'return_multiple') {
             $trans_id     = (int)$ret['transaction_id'];
             $good_qty     = (int)($ret['return_qty'] ?? 0);
             $damaged_qty  = (int)($ret['damaged_qty'] ?? 0);
-            $total_return = $good_qty + $damaged_qty;
+            $total_return = $good_qty;
 
             if ($total_return === 0) continue;
 
@@ -478,26 +482,172 @@ elseif ($action === 'return_multiple') {
 
             // Add back good items to stock
             if ($good_qty > 0) {
+                $dateToday = date('Y-m-d');
                 $conn->query("UPDATE inventory SET
                               current_stock = current_stock + $good_qty,
                               qty_on_hand = qty_on_hand + $good_qty
                               WHERE id = $inventory_id");
 
-                $conn->query("INSERT INTO inventory_transactions
-                              (inventory_id, action_type, quantity, transaction_date, returned_date, remarks, borrower_id)
-                              VALUES ($inventory_id, 'Return', $good_qty, '$today', '$today', '$remarks', $borrower_id)");
+                // $conn->query("INSERT INTO inventory_transactions
+                //               (inventory_id, action_type, quantity, transaction_date, returned_date, remarks, borrower_id)
+                //               VALUES ($inventory_id, 'Return', $good_qty, '$today', '$today', '$remarks', $borrower_id)");
+                $conn->query("UPDATE inventory_transactions set quantity = quantity - $good_qty, borrowed_quantity = borrowed_quantity + $good_qty, info = concat(info, ' -RETURNED $good_qty for item $inventory_id on $dateToday ') WHERE id = $trans_id");
             }
 
             // Record damaged/lost (does NOT go back to stock)
             if ($damaged_qty > 0) {
                 $conn->query("UPDATE inventory SET qty_damaged = qty_damaged + $damaged_qty WHERE id = $inventory_id");
-                $conn->query("INSERT INTO inventory_transactions
-                              (inventory_id, action_type, quantity, transaction_date, returned_date, remarks, borrower_id)
-                              VALUES ($inventory_id, 'Broken', $damaged_qty, '$today', '$today', 'Damaged/Lost: $remarks', $borrower_id)");
+                // $conn->query("INSERT INTO inventory_transactions
+                //               (inventory_id, action_type, quantity, transaction_date, returned_date, remarks, borrower_id)
+                //               VALUES ($inventory_id, 'Broken', $damaged_qty, '$today', '$today', 'Damaged/Lost: $remarks', $borrower_id)");
             }
 
             // ONLY mark borrow transaction as fully returned when nothing is left
             if ($total_return >= $borrowed_qty) {
+                $conn->query("UPDATE inventory_transactions SET returned_date = '$today' WHERE id = $trans_id");
+            }
+        }
+        $conn->commit();
+        $response = ['status' => 'success', 'message' => 'Return processed successfully'];
+    } catch (Exception $e) {
+        $conn->rollback();
+        $response = ['status' => 'error', 'message' => $e->getMessage()];
+    }
+    $conn->autocommit(true);
+}
+elseif ($action === 'replace_multiple') {
+    $replace_json = $_POST['replace'] ?? '';
+    $replace = json_decode($replace_json, true);
+    $remarks = $conn->real_escape_string($_POST['remarks'] ?? '');
+    $today = date('Y-m-d');
+
+    if (!is_array($replace) || empty($replace)) {
+        $response['message'] = 'No return data';
+        echo json_encode($response);
+        closeDBConnection($conn);
+        exit;
+    }
+
+    $conn->autocommit(false);
+    try {
+        foreach ($replace as $rep) {
+            $trans_id     = (int)$rep['transaction_id'];
+            $replace_qty     = (int)($rep['replace_qty'] ?? 0);
+            $damaged_qty  = (int)($rep['damaged_qty'] ?? 0);
+            $total_replace = $replace_qty;
+
+            if ($total_replace === 0) continue;
+
+            $trans = $conn->query("SELECT inventory_id, borrower_id, quantity AS borrowed_qty 
+                                   FROM inventory_transactions 
+                                   WHERE id = $trans_id AND action_type = 'Borrow'");
+            if ($trans->num_rows === 0) continue;
+
+            $t = $trans->fetch_assoc();
+            $inventory_id = $t['inventory_id'];
+            $borrower_id  = $t['borrower_id'];
+            $borrowed_qty = $t['borrowed_qty'];
+
+            if ($total_replace > $borrowed_qty) {
+                throw new Exception("Cannot return more than borrowed ($borrowed_qty)");
+            }
+
+            // Add back good items to stock
+            if ($replace_qty > 0) {
+                $dateToday = date('Y-m-d');
+                $conn->query("UPDATE inventory SET
+                              current_stock = current_stock + $replace_qty,
+                              qty_on_hand = qty_on_hand + $replace_qty
+                              WHERE id = $inventory_id");
+
+                // $conn->query("INSERT INTO inventory_transactions
+                //               (inventory_id, action_type, quantity, transaction_date, returned_date, remarks, borrower_id)
+                //               VALUES ($inventory_id, 'Return', $good_qty, '$today', '$today', '$remarks', $borrower_id)");
+                $conn->query("UPDATE inventory_transactions set quantity = quantity - $replace_qty, replaced_quantity = replaced_quantity + $replace_qty, info = concat(info, ' -REPLACED $replace_qty for item $inventory_id on $dateToday ') WHERE id = $trans_id");
+            }
+
+            // Record damaged/lost (does NOT go back to stock)
+            if ($damaged_qty > 0) {
+                $conn->query("UPDATE inventory SET qty_damaged = qty_damaged + $damaged_qty WHERE id = $inventory_id");
+                // $conn->query("INSERT INTO inventory_transactions
+                //               (inventory_id, action_type, quantity, transaction_date, returned_date, remarks, borrower_id)
+                //               VALUES ($inventory_id, 'Broken', $damaged_qty, '$today', '$today', 'Damaged/Lost: $remarks', $borrower_id)");
+            }
+
+            // ONLY mark borrow transaction as fully returned when nothing is left
+            if ($total_replace >= $borrowed_qty) {
+                $conn->query("UPDATE inventory_transactions SET returned_date = '$today' WHERE id = $trans_id");
+            }
+        }
+        $conn->commit();
+        $response = ['status' => 'success', 'message' => 'Return processed successfully'];
+    } catch (Exception $e) {
+        $conn->rollback();
+        $response = ['status' => 'error', 'message' => $e->getMessage()];
+    }
+    $conn->autocommit(true);
+}
+elseif ($action === 'pay_multiple') {
+    $pay_json = $_POST['pay'] ?? '';
+    $pay = json_decode($pay_json, true);
+    $remarks = $conn->real_escape_string($_POST['remarks'] ?? '');
+    $today = date('Y-m-d');
+
+    if (!is_array($pay) || empty($pay)) {
+        $response['message'] = 'No return data';
+        echo json_encode($response);
+        closeDBConnection($conn);
+        exit;
+    }
+
+    $conn->autocommit(false);
+    try {
+        foreach ($pay as $py) {
+            $trans_id     = (int)$py['transaction_id'];
+            $pay_qty     = (int)($py['pay_qty'] ?? 0);
+            $damaged_qty  = (int)($py['damaged_qty'] ?? 0);
+            $total_pay = $pay_qty;
+
+            if ($total_pay === 0) continue;
+
+            $trans = $conn->query("SELECT inventory_id, borrower_id, quantity AS borrowed_qty 
+                                   FROM inventory_transactions 
+                                   WHERE id = $trans_id AND action_type = 'Borrow'");
+            if ($trans->num_rows === 0) continue;
+
+            $t = $trans->fetch_assoc();
+            $inventory_id = $t['inventory_id'];
+            $borrower_id  = $t['borrower_id'];
+            $borrowed_qty = $t['borrowed_qty'];
+
+            if ($total_pay > $borrowed_qty) {
+                throw new Exception("Cannot return more than borrowed ($borrowed_qty)");
+            }
+
+            // Add back good items to stock
+            if ($pay_qty > 0) {
+                $dateToday = date('Y-m-d');
+                $conn->query("UPDATE inventory SET
+                              current_stock = current_stock + $pay_qty,
+                              qty_on_hand = qty_on_hand + $pay_qty
+                              WHERE id = $inventory_id");
+
+                // $conn->query("INSERT INTO inventory_transactions
+                //               (inventory_id, action_type, quantity, transaction_date, returned_date, remarks, borrower_id)
+                //               VALUES ($inventory_id, 'Return', $good_qty, '$today', '$today', '$remarks', $borrower_id)");
+                $conn->query("UPDATE inventory_transactions set quantity = quantity - $pay_qty, pay_quantity = pay_quantity + $pay_qty, info = concat(info, ' -PAID $pay_qty for item $inventory_id on $dateToday ') WHERE id = $trans_id");
+            }
+
+            // Record damaged/lost (does NOT go back to stock)
+            if ($damaged_qty > 0) {
+                $conn->query("UPDATE inventory SET qty_damaged = qty_damaged + $pay_qty WHERE id = $inventory_id");
+                // $conn->query("INSERT INTO inventory_transactions
+                //               (inventory_id, action_type, quantity, transaction_date, returned_date, remarks, borrower_id)
+                //               VALUES ($inventory_id, 'Broken', $damaged_qty, '$today', '$today', 'Damaged/Lost: $remarks', $borrower_id)");
+            }
+
+            // ONLY mark borrow transaction as fully returned when nothing is left
+            if ($total_pay >= $borrowed_qty) {
                 $conn->query("UPDATE inventory_transactions SET returned_date = '$today' WHERE id = $trans_id");
             }
         }
@@ -551,12 +701,12 @@ elseif ($action === 'record_replacement') {
     }
 
     // Increase replaced counter
-    $conn->query("UPDATE inventory SET qty_replaced = qty_replaced + $quantity WHERE id = {$t['inventory_id']}");
-
+    $conn->query("UPDATE inventory SET qty_on_hand = qty_on_hand + $quantity, current_stock = current_stock + $quantity, qty_replaced = qty_replaced + $quantity WHERE id = {$t['inventory_id']}");
     // Log replacement
-    $conn->query("INSERT INTO inventory_transactions
-                  (inventory_id, action_type, quantity, transaction_date, remarks, borrower_id)
-                  VALUES ({$t['inventory_id']}, 'Replace', $quantity, '$today', 'Replaced ($reason): $remarks', {$t['borrower_id']})");
+    // $conn->query("INSERT INTO inventory_transactions
+    //               (inventory_id, action_type, quantity, transaction_date, remarks, borrower_id)
+    //               VALUES ({$t['inventory_id']}, 'Replace', $quantity, '$today', 'Replaced ($reason): $remarks', {$t['borrower_id']})");
+    $conn->query("UPDATE inventory_transactions set quantity = quantity - $quantity, replaced_quantity = replaced_quantity + $quantity, info = concat(info, ' -REPLACED $quantity for item {$t['inventory_id']} on $today ') WHERE id = $trans_id");
 
     // If everything is replaced → mark original borrow as returned
     if (($remaining - $quantity) <= 0) {
@@ -634,14 +784,9 @@ elseif ($action === 'archive_item') {
    elseif ($action === 'fetch_stock_in_out_monitoring') {
     $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
     $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
-    $search = isset($_GET['search']) ? $_GET['search'] : 0;
     $offset = ($page - 1) * $limit;
 
     $where = " WHERE i.archived = 0";
-
-    if ($search !== 0){
-        $where .= " AND sm.item_id= $search";
-    }
 
     $sql = "
         SELECT
@@ -694,7 +839,7 @@ elseif ($action === 'archive_item') {
             sm.created_by
         FROM stock_movement sm
         JOIN inventory i ON sm.item_id = i.id
-        WHERE i.archived = 0 AND sm.item_id = $search
+        WHERE sm.item_id = $search
         ORDER BY sm.movement_date DESC, sm.id DESC
         LIMIT $offset, $limit
     ";

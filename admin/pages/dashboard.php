@@ -267,10 +267,7 @@ closeDBConnection($conn);
                         <?php if ($due_count > 0): ?>
                             <small class="opacity-90">Items returning soon</small>
                         <?php endif; ?>
-                        <h6 class="mb-0 fw-bold">Hearing for today (<?php echo $due_count; ?>)</h6>
-                        <?php if ($due_count > 0): ?>
-                            <small class="opacity-90"></small>
-                        <?php endif; ?>
+                        
                     </div>
                     <?php if ($due_count > 0): ?>
                         <div class="list-group list-group-flush" style="max-height: 60vh; overflow-y: auto;">
@@ -312,10 +309,6 @@ closeDBConnection($conn);
                             <i class="bi bi-check-circle-fill fs-1 text-success mb-3 d-block"></i>
                             <h6>No items due soon</h6>
                             <small>Everything is returned on time!</small>
-                            <hr>
-                            <i class="bi bi-check-circle-fill fs-1 text-success mb-3 d-block"></i>
-                            <h6>No hearing for this day</h6>
-                            <small>You have no hearings scheduled for today.</small>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -330,26 +323,26 @@ closeDBConnection($conn);
                 <div class="title mt-3">Total Residents</div>
                 <div class="big-number"><?php echo number_format($total_residents); ?></div>
                 <div class="stat-grid">
-                    <div class="stat-item"><a onclick="loadResidentList('Male')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-gender-male"></i><div class="label">Male</div><div class="value"><?php echo number_format($male); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Male')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-gender-male"></i><div class="label">Male</div><div class="value"><?php echo number_format($male); ?></div></a></div>
                     <div class="stat-item"><a onclick="loadResidentList('Female')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-gender-female"></i><div class="label">Female</div><div class="value"><?php echo number_format($female); ?></div></a></div>
 
                     <!-- VOTERS COUNT ADDED HERE, RIGHT NEXT TO MALE -->
-                    <div class="stat-item"><a onclick="loadResidentList('Voters')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-check2-circle"></i><div class="label">Registered Voter</div><div class="value"><?php echo number_format($voters); ?></div></a></div>
-                    <div class="stat-item"><a onclick="loadResidentList('Non-Voters')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-x-circle"></i><div class="label">Non-Registered</div><div class="value"><?php echo number_format($total_residents - $voters); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Voters')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-check2-circle"></i><div class="label">Registered Voter</div><div class="value"><?php echo number_format($voters); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Non-Voters')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-x-circle"></i><div class="label">Non-Registered</div><div class="value"><?php echo number_format($total_residents - $voters); ?></div></a></div>
                     
                    
-                    <div class="stat-item"><a onclick="loadResidentList('Senior')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Senior</div><div class="value"><?php echo number_format($senior); ?></div></a></div>
-                    <div class="stat-item"><a onclick="loadResidentList('Adult')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Adult</div><div class="value"><?php echo number_format($adult); ?></div></a></div>
-                    <div class="stat-item"><a onclick="loadResidentList('Teen')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Teen</div><div class="value"><?php echo number_format($teen); ?></div></a></div>
-                    <div class="stat-item"><a onclick="loadResidentList('Minor')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Minor</div><div class="value"><?php echo number_format($minor); ?></div></a></div>
-                    <div class="stat-item"><a onclick="loadResidentList('Toddler')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-standing"></i><div class="label">Toddler</div><div class="value"><?php echo number_format($toddler); ?></div></a></div>
-                    <div class="stat-item"><a onclick="loadResidentList('Infant')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-standing"></i><div class="label">Infant</div><div class="value"><?php echo number_format($infant); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Senior')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Senior</div><div class="value"><?php echo number_format($senior); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Adult')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Adult</div><div class="value"><?php echo number_format($adult); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Teen')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Teen</div><div class="value"><?php echo number_format($teen); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Minor')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-lines-fill"></i><div class="label">Minor</div><div class="value"><?php echo number_format($minor); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Toddler')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-standing"></i><div class="label">Toddler</div><div class="value"><?php echo number_format($toddler); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Infant')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-standing"></i><div class="label">Infant</div><div class="value"><?php echo number_format($infant); ?></div></a></div>
 
-                    <div class="stat-item"><a onclick="loadResidentList('Employed')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-briefcase"></i><div class="label">Employed</div><div class="value"><?php echo number_format($employed); ?></div></a></div>
-                    <div class="stat-item"><a onclick="loadResidentList('Unemployed')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-x"></i><div class="label">Unemployed</div><div class="value"><?php echo number_format($total_residents - $employed); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Employed')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-briefcase"></i><div class="label">Employed</div><div class="value"><?php echo number_format($employed); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Unemployed')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-x"></i><div class="label">Unemployed</div><div class="value"><?php echo number_format($total_residents - $employed); ?></div></a></div>
 
-                    <div class="stat-item"><a onclick="loadResidentList('PWD')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-wheelchair"></i><div class="label">PWD</div><div class="value"><?php echo number_format($pwd); ?></div></a></div>
-                    <div class="stat-item"><a onclick="loadResidentList('Solo')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-heart"></i><div class="label">Solo Parent</div><div class="value"><?php echo number_format($solo); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('PWD')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-wheelchair"></i><div class="label">PWD</div><div class="value"><?php echo number_format($pwd); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Solo')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-person-heart"></i><div class="label">Solo Parent</div><div class="value"><?php echo number_format($solo); ?></div></a></div>
 
                 </div>
             </div>
@@ -361,11 +354,11 @@ closeDBConnection($conn);
                 <div class="big-number"><?php echo number_format($total_households); ?></div>
                 <div class="info-box">
                     <div class="info-row"><span><strong>With PWD</strong></span><strong><?php echo number_format($households_with_pwd); ?></strong></div>
-                    <div class="info-row"><a onclick="loadResidentList('PWDMale')" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-PWD Male</span></a><strong><?php echo number_format($male_with_pwd); ?></strong></div>
-                    <div class="info-row"><a onclick="loadResidentList('PWDFemale')" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-PWD Female</span></a><strong><?php echo number_format($female_with_pwd); ?></strong></div>
+                    <div class="info-row"><a onclick="loadResidentList('PWDMale')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-PWD Male</span></a><strong><?php echo number_format($male_with_pwd); ?></strong></div>
+                    <div class="info-row"><a onclick="loadResidentList('PWDFemale')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-PWD Female</span></a><strong><?php echo number_format($female_with_pwd); ?></strong></div>
                     <div class="info-row"><span><strong>With Senior</strong></span><strong><?php echo number_format($households_with_senior); ?></strong></div>
-                    <div class="info-row"><a onclick="loadResidentList('SeniorMale')" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-Senior Male</span></a><strong><?php echo number_format($male_with_senior); ?></strong></div>
-                    <div class="info-row"><a onclick="loadResidentList('SeniorFemale')" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-Senior Female</span></a><strong><?php echo number_format($female_with_senior); ?></strong></div>
+                    <div class="info-row"><a onclick="loadResidentList('SeniorMale')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-Senior Male</span></a><strong><?php echo number_format($male_with_senior); ?></strong></div>
+                    <div class="info-row"><a onclick="loadResidentList('SeniorFemale')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><span>&nbsp;&nbsp;-Senior Female</span></a><strong><?php echo number_format($female_with_senior); ?></strong></div>
                 </div>
             </div>
             <br>
