@@ -37,29 +37,32 @@ $logsQuery = "
     UNION ALL
     -- Blotter Cases
     SELECT 'Blotter Filed', 
-           COALESCE(CONCAT(res.first_name,' ',res.last_name), 'Unknown'), 
+           ur.full_name,
            b.created_at, 'blotters', b.id,
            CONCAT('Case ID: ', b.case_id, ' | ', b.nature_of_complaint)
     FROM blotters b
     LEFT JOIN residents res ON JSON_CONTAINS(b.complainant_ids, CONCAT('\"', res.id, '\"'))
+    LEFT JOIN officials ur ON b.barangay_incharge_id = ur.id
 
     UNION ALL
     -- Incidents
     SELECT 'Incident Reported',
-           COALESCE(r.full_name, i.reported_by_name, 'Anonymous'),
+           ur.full_name,
            i.created_at, 'incidents', i.id,
            CONCAT('Case ID: ', i.case_id, ' | Nature: ', LEFT(i.nature_of_incident, 60), '...')
     FROM incidents i
     LEFT JOIN residents r ON i.reported_by_resident_id = r.id
+    LEFT JOIN officials ur ON i.barangay_official_id = ur.id
 
     UNION ALL
     -- Complaints
     SELECT 'Complaint Filed',
-           COALESCE(res.full_name, c.reported_by_name, 'Walk-in'),
+           ur.full_name,
            c.created_at, 'complaints', c.id,
            CONCAT('Case ID: ', c.case_id)
     FROM complaints c
     LEFT JOIN residents res ON c.reported_by_resident_id = res.id
+    LEFT JOIN officials ur ON c.barangay_official_id = ur.id
 
     UNION ALL
     -- Inventory Added
@@ -77,7 +80,7 @@ $logsQuery = "
                WHEN it.action_type = 'Broken' THEN 'Item Damaged/Lost'
                WHEN it.action_type = 'Replace' THEN 'Item Replaced'
            END AS action_type,
-           COALESCE(it.transacted_by, 'System'),
+           COALESCE(it.transacted_by, 'Admin'),
            it.created_at,
            'inventory_transactions',
            it.id,
