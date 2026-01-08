@@ -162,7 +162,6 @@ function generateResidentHTML($r, $full = false) {
 
     return '
     <table border="1" cellpadding="6" cellspacing="0" style="width:100%;">
-        <tr><td colspan="2" style="background-color:#f8f9fa;"><strong>Personal Information</strong> ' . $profile . '</td></tr>
         <tr><td width="35%"><strong>Full Name</strong></td><td>' . htmlspecialchars($r['full_name']) . '</td></tr>
         <tr><td><strong>Age / Sex</strong></td><td>' . $r['age'] . ' years / ' . $r['sex'] . '</td></tr>
         <tr><td><strong>Civil Status</strong></td><td>' . $r['civil_status'] . '</td></tr>
