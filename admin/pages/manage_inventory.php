@@ -46,6 +46,7 @@ require_once 'partials/db_conn.php';
                                 <tr>
                                     <th>Item Name</th>
                                     <th>Description</th>
+                                    <th>Stock Status</th>
                                     <th>Current Stock</th>
                                     <th>Received</th>
                                     <th>Lost</th>
@@ -450,10 +451,15 @@ function updateStockMonitoringTable(items) {
         const totalValue = unitValue * item.current_stock;
         const archi = item.archived == 0 ? 'danger' : 'primary';
         const archivedStatus = item.archived == 1 ? 'Inactive' : 'Active';
+        const isCritical = item.current_stock <= 10;
+        const isCriticalType = isCritical ? 'Critical' : 'Normal';
+        const isCriticalBadge = isCritical ? 'bg-warning' : 'bg-primary';
         tbody.append(`
+
             <tr>
                 <td><strong>${item.item_name}</strong></td>
                 <td>${item.description || '—'}</td>
+                <td class="text-center"><span class="badge ${isCriticalBadge}">${isCriticalType}</span></td>
                 <td class="text-center"><strong>${item.current_stock}</strong></td>
                 <td class="text-center">${item.qty_received}</td>
                 <td class="text-center">${item.qty_lost}</td>
@@ -461,7 +467,7 @@ function updateStockMonitoringTable(items) {
                 <td class="text-center">${item.qty_replaced}</td>
                 <td class="text-center">${unitValue > 0 ? '₱' + unitValue.toFixed(2) : '—'}</td>
                 <td>${item.remarks || '—'}</td>
-                <td>${archivedStatus}</td>
+                <td>${archivedStatus || '—'}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#stockMonitoringModal" onclick="loadStockInOutMonitoring2(${item.id})" title="View">
                         <i class="fas fa-eye"></i>

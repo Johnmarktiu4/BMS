@@ -114,27 +114,11 @@ if ($action === 'add_account') {
 if ($action === 'update_account') {
     $id     = (int)$_POST['id'];
     $status = $_POST['status'] === 'Active' ? 'Active' : 'Inactive';
-    $a1     = strtolower(trim($_POST['sec_a1']));
-    $a2     = strtolower(trim($_POST['sec_a2']));
-    $a3     = strtolower(trim($_POST['sec_a3']));
 
-    if (empty($a1) || empty($a2) || empty($a3)) {
-        echo json_encode(['status' => 'error', 'message' => 'All security answers required']);
-        exit;
-    }
-
-    if (!empty($_POST['password'])) {
-        $hash = password_hash($_POST['password'], PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("UPDATE user_roles_official_accounts 
-            SET password = ?, status = ?, sec_a1 = ?, sec_a2 = ?, sec_a3 = ? 
+     $stmt = $conn->prepare("UPDATE user_roles_official_accounts 
+            SET status = ?
             WHERE id = ?");
-        $stmt->bind_param("sssssi", $hash, $status, $a1, $a2, $a3, $id);
-    } else {
-        $stmt = $conn->prepare("UPDATE user_roles_official_accounts 
-            SET status = ?, sec_a1 = ?, sec_a2 = ?, sec_a3 = ? 
-            WHERE id = ?");
-        $stmt->bind_param("ssssi", $status, $a1, $a2, $a3, $id);
-    }
+        $stmt->bind_param("si", $status, $id);
 
     if ($stmt->execute()) {
         echo json_encode(['status' => 'success', 'message' => 'Account updated successfully']);

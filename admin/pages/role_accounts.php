@@ -82,10 +82,12 @@ require_once 'partials/db_conn.php';
                     </div>
 
                     <div class="row">
+                        <div id="updatePas" style="display: block;">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Password <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" id="password" minlength="6">
                             <small class="text-muted">Leave blank when editing to keep current password</small>
+                        </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Status</label>
@@ -98,21 +100,23 @@ require_once 'partials/db_conn.php';
                     </div>
 
                     <!-- 3 SECURITY QUESTIONS ONLY -->
-                    <hr class="my-4">
-                    <h5 class="mb-3 text-primary">Security Questions (Required for Password Recovery)</h5>
-                    <p class="text-muted small">These will be used to recover password if forgotten.</p>
+                    <div id="updateSec" style="display: block;">
+                        <hr class="my-4">
+                        <h5 class="mb-3 text-primary">Security Questions (Required for Password Recovery)</h5>
+                        <p class="text-muted small">These will be used to recover password if forgotten.</p>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">1. What is your mother's maiden name? <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="sec_a1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">2. What was the name of your first pet? <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="sec_a2" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">3. In what city were you born? <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="sec_a3" required>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">1. What is your mother's maiden name? <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="sec_a1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">2. What was the name of your first pet? <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="sec_a2" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">3. In what city were you born? <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="sec_a3" required>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -178,9 +182,6 @@ function updateAccountsTable() {
                     <button class="btn btn-sm btn-outline-warning me-1" onclick="editAccount(${acc.id})" title="Edit">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteAccount(${acc.id})" title="Delete">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
                 </td>
             </tr>
         `);
@@ -199,6 +200,8 @@ function openAddModal() {
     $('#password').prop('required', true);
     $('#officialSearch').val('');
     populateOfficialDropdown('');
+    $('#updateSec').css('display', 'block');
+    $('#updatePas').css('display', 'block');
     new bootstrap.Modal('#accountModal').show();
 }
 
@@ -220,6 +223,8 @@ function editAccount(id) {
     $('#sec_a3').val(acc.sec_a3 || '');
     $('#password').prop('required', false).val('');
     $('#officialDropdown').hide();
+    $('#updateSec').css('display', 'none');
+    $('#updatePas').css('display', 'none');
     new bootstrap.Modal('#accountModal').show();
 }
 
@@ -269,23 +274,35 @@ function saveAccount() {
     const a1 = $('#sec_a1').val().trim().toLowerCase();
     const a2 = $('#sec_a2').val().trim().toLowerCase();
     const a3 = $('#sec_a3').val().trim().toLowerCase();
-
+    let data = [];
     if (!official_id) return alert('Please select an official');
     if (!username) return alert('Username is required');
-    if (!id && !password) return alert('Password is required for new account');
-    if (!a1 || !a2 || !a3) return alert('All 3 security answers are required');
-
-    const data = {
-        action: id ? 'update_account' : 'add_account',
-        id: id || '',
-        official_id: official_id,
-        username: username,
-        password: password,
-        status: status,
-        sec_a1: a1,
-        sec_a2: a2,
-        sec_a3: a3
-    };
+    if (!id) {
+        if (!a1 || !a2 || !a3) return alert('All 3 security answers are required');
+        if (password.length < 8) return alert('Password must be at least 8 characters long');
+        if (!validatePassword(password)) return alert('Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.');
+         data = {
+            action: id ? 'update_account' : 'add_account',
+            id: id || '',
+            official_id: official_id,
+            username: username,
+            password: password,
+            status: status,
+            sec_a1: a1,
+            sec_a2: a2,
+            sec_a3: a3
+        };
+    }
+    else{
+         data = {
+            action: id ? 'update_account' : 'add_account',
+            id: id || '',
+            official_id: official_id,
+            username: username,
+            status: status
+        };
+    }
+    
 
     $.post('partials/role_accounts_api.php', data, function(r) {
         if (r.status === 'success') {
@@ -297,6 +314,31 @@ function saveAccount() {
         }
     }, 'json');
 }
+
+function validatePassword(password) {
+    
+    const checks = {
+        length: v => v.length >= 8,
+        lower:  v => /[a-z]/.test(v),
+        upper:  v => /[A-Z]/.test(v),
+        digit:  v => /\d/.test(v),
+        special:v => /[^A-Za-z0-9]/.test(v)
+    };
+
+      const ok =
+      checks.length(password) &&
+      checks.lower(password)  &&
+      checks.upper(password)  &&
+      checks.digit(password)  &&
+      checks.special(password);
+
+    // Set a concise custom message if invalid (shown by reportValidity / submit)
+    if (!ok) {
+      return false;
+    } 
+    return true;
+  }
+
 
 function deleteAccount(id) {
     if (!confirm('Delete this account permanently? This cannot be undone.')) return;

@@ -55,7 +55,7 @@ function getPersons($conn, $complaint_id, $table) {
         if ($row['resident_id']) {
             // Use full_name from residents table
             $rid = $row['resident_id'];
-            $r = $conn->query("SELECT full_name, age FROM residents WHERE id = $rid AND archived = 0 LIMIT 1")->fetch_assoc();
+            $r = $conn->query("SELECT full_name, age FROM residents WHERE id = $rid LIMIT 1")->fetch_assoc();
             $name = $r['full_name'] ?? 'Unknown Resident';
             $age  = $r['age'] ?? $row['age'];
         } else {

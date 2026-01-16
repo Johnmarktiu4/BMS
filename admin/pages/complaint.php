@@ -273,7 +273,7 @@
                                     <div class="non-resident-form" id="defendantNonResidentForm">
                                         <h4 class="text-danger mb-4">Add Non-Resident Defendant</h4>
                                         <div class="row g-4">
-                                            <div class="col-md-6"><input type="text" class="form-control form-control-lg non-resident-name" placeholder="Full Name *" required></div>
+                                            <div class="col-md-6"><input type="text" class="form-control form-control-lg non-resident-name defendant" placeholder="Full Name *" required></div>
                                             <div class="col-md-3">
                                                 <select class="form-select form-select-lg non-resident-sex">
                                                     <option value="Male">Male</option>
@@ -651,6 +651,44 @@ $tbody.append(`
     $('#searchInput, #statusFilter, #dateFilter').on('input change', () => {
         clearTimeout(window.filterTO);
         window.filterTO = setTimeout(loadComplaints, 400);
+    });
+
+    const inputNonResident = document.querySelector('.non-resident-name');
+    inputNonResident.addEventListener('input', (e) => {
+        const el = e.target;
+        const { selectionStart, selectionEnd, value } = el;
+        if (!value) return;
+        const first = value.charAt(0).toUpperCase();
+        const rest = value.slice(1);
+        const newValue = first + rest;
+        if (newValue !== value) {
+        // Update value without breaking the caret position
+        const offset = newValue.length - value.length;
+        el.value = newValue;
+        // Restore cursor position (keeps selection if any)
+        const newStart = Math.max(1, selectionStart + offset);
+        const newEnd = Math.max(1, selectionEnd + offset);
+        el.setSelectionRange(newStart, newEnd);
+        }
+    });
+
+    const inputNonResident2 = document.querySelector('.non-resident-name.defendant');
+    inputNonResident2.addEventListener('input', (e) => {
+        const el = e.target;
+        const { selectionStart, selectionEnd, value } = el;
+        if (!value) return;
+        const first = value.charAt(0).toUpperCase();
+        const rest = value.slice(1);
+        const newValue = first + rest;
+        if (newValue !== value) {
+        // Update value without breaking the caret position
+        const offset = newValue.length - value.length;
+        el.value = newValue;
+        // Restore cursor position (keeps selection if any)
+        const newStart = Math.max(1, selectionStart + offset);
+        const newEnd = Math.max(1, selectionEnd + offset);
+        el.setSelectionRange(newStart, newEnd);
+        }
     });
 
     $(document).ready(() => {

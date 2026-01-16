@@ -180,7 +180,7 @@ elseif ($action === 'get') {
 /* ARCHIVE */
 elseif ($action === 'archive') {
     $id = (int)$_POST['id'];
-    $sql = "UPDATE officials SET archived=1, status='Inactive' WHERE id=$id";
+    $sql = "UPDATE officials SET archived=1, status='Inactive', term_end_date = CURDATE() WHERE id=$id";
     if ($conn->query($sql)) {
         $response = ['status' => 'success', 'message' => 'Official archived'];
     } else {

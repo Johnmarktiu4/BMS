@@ -1220,6 +1220,100 @@
         setTimeout(() => alertDiv.remove(), 5000);
     }
 
+    const inputFirstName = document.getElementById('firstName');
+    inputFirstName.addEventListener('input', (e) => {
+        const el = e.target;
+        const { selectionStart, selectionEnd, value } = el;
+
+        if (!value) return;
+
+        const first = value.charAt(0).toUpperCase();
+        const rest = value.slice(1);
+        const newValue = first + rest;
+
+        if (newValue !== value) {
+        // Update value without breaking the caret position
+        const offset = newValue.length - value.length;
+        el.value = newValue;
+
+        // Restore cursor position (keeps selection if any)
+        const newStart = Math.max(1, selectionStart + offset);
+        const newEnd = Math.max(1, selectionEnd + offset);
+        el.setSelectionRange(newStart, newEnd);
+        }
+    });
+
+    const inputLastName = document.getElementById('lastName');
+    inputLastName.addEventListener('input', (e) => {
+        const el = e.target;
+        const { selectionStart, selectionEnd, value } = el;
+
+        if (!value) return;
+
+        const first = value.charAt(0).toUpperCase();
+        const rest = value.slice(1);
+        const newValue = first + rest;
+
+        if (newValue !== value) {
+        // Update value without breaking the caret position
+        const offset = newValue.length - value.length;
+        el.value = newValue;
+
+        // Restore cursor position (keeps selection if any)
+        const newStart = Math.max(1, selectionStart + offset);
+        const newEnd = Math.max(1, selectionEnd + offset);
+        el.setSelectionRange(newStart, newEnd);
+        }
+    });
+
+    const inputMiddleName = document.getElementById('middleName');
+    inputMiddleName.addEventListener('input', (e) => {
+        const el = e.target;
+        const { selectionStart, selectionEnd, value } = el;
+
+        if (!value) return;
+
+        const first = value.charAt(0).toUpperCase();
+        const rest = value.slice(1);
+        const newValue = first + rest;
+
+        if (newValue !== value) {
+        // Update value without breaking the caret position
+        const offset = newValue.length - value.length;
+        el.value = newValue;
+
+        // Restore cursor position (keeps selection if any)
+        const newStart = Math.max(1, selectionStart + offset);
+        const newEnd = Math.max(1, selectionEnd + offset);
+        el.setSelectionRange(newStart, newEnd);
+        }
+    });
+
+    const inputEmergencyName = document.getElementById('emergencyName');
+    inputEmergencyName.addEventListener('input', (e) => {
+        const el = e.target;
+        const { selectionStart, selectionEnd, value } = el;
+
+        if (!value) return;
+
+        const first = value.charAt(0).toUpperCase();
+        const rest = value.slice(1);
+        const newValue = first + rest;
+
+        if (newValue !== value) {
+        // Update value without breaking the caret position
+        const offset = newValue.length - value.length;
+        el.value = newValue;
+
+        // Restore cursor position (keeps selection if any)
+        const newStart = Math.max(1, selectionStart + offset);
+        const newEnd = Math.max(1, selectionEnd + offset);
+        el.setSelectionRange(newStart, newEnd);
+        }
+    });
+
+
+
     $(document).ready(function() {
         loadResidents(1);
         loadHeads();
