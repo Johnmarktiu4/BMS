@@ -224,7 +224,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="dateOfBirth" class="form-label">Date of Birth *</label>
-                                    <input type="date" class="form-control" id="dateOfBirth" name="date_of_birth" required>
+                                    <input type="date" class="form-control" id="dateOfBirth" onkeydown="return false" name="date_of_birth" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="placeOfBirth" class="form-label">Place of Birth *</label>

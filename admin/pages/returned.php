@@ -95,11 +95,11 @@ require_once 'partials/db_conn.php';
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Transaction Date *</label>
-                                        <input type="date" class="form-control" name="transaction_date" required>
+                                        <input type="date" class="form-control" onkeydown="return false" name="transaction_date" required>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Return Date</label>
-                                        <input type="date" class="form-control" name="return_date">
+                                        <input type="date" class="form-control" onkeydown="return false" name="return_date">
                                     </div>
                                     <div class="col-md-12">
                                         <label class="form-label">Remarks</label>

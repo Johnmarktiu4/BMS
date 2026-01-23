@@ -177,11 +177,11 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">Borrow Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="borrow_date_input" required>
+                            <input type="date" class="form-control" onkeydown="return false" id="borrow_date_input" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Return By (Max 7 days) <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="return_date" min="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d', strtotime('+7 days')) ?>" required>
+                            <input type="date" class="form-control" onkeydown="return false" id="return_date" min="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d', strtotime('+7 days')) ?>" required>
                             <small class="text-muted">Maximum 7 days from borrow date</small>
                         </div>
                         <div class="col-md-4">
@@ -346,7 +346,7 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
                     </div>
                     <div class="col-md-4">
                         <label>Date</label>
-                        <input type="date" class="form-control" value="<?= date('Y-m-d') ?>" readonly>
+                        <input type="date" class="form-control" onkeydown="return false" value="<?= date('Y-m-d') ?>" readonly>
                     </div>
                 </div>
                 <div class="mt-3">

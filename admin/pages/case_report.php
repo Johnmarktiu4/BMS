@@ -167,7 +167,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="dateFiled" class="form-label">Date Filed *</label>
-                                    <input type="date" class="form-control" id="dateFiled" name="date_filed" required>
+                                    <input type="date" onkeydown="return false" class="form-control" id="dateFiled" name="date_filed" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="status" class="form-label">Status *</label>

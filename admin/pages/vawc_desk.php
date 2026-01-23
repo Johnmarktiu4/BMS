@@ -95,7 +95,7 @@ include 'partials/db_conn.php';
                                     </div>
                                     <div class="mb-3">
                                         <label for="victim_dob" class="form-label">Date of Birth</label>
-                                        <input type="date" class="form-control" id="victim_dob" name="victim_dob" required>
+                                        <input type="date" onkeydown="return false" class="form-control" id="victim_dob" name="victim_dob" required>
                                     </div>
                                     <div class="mb-3">
                                         <label for="victim_age" class="form-label">Age</label>
@@ -137,7 +137,7 @@ include 'partials/db_conn.php';
                                     <h6>Incident Details</h6>
                                     <div class="mb-3">
                                         <label for="incident_date" class="form-label">Date</label>
-                                        <input type="date" class="form-control" id="incident_date" name="incident_date" required>
+                                        <input type="date" onkeydown="return false" class="form-control" id="incident_date" name="incident_date" required>
                                     </div>
                                     <div class="mb-3">
                                         <label for="incident_time" class="form-label">Time</label>

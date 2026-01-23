@@ -107,7 +107,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <input type="date" class="form-control form-control-lg" id="dateFilter">
+                    <input type="date" class="form-control form-control-lg" onkeydown="return false" id="dateFilter">
                 </div>
                 <div class="col-md-2">
                     <button class="btn btn-outline-danger btn-lg w-100" onclick="clearFilters()">Clear</button>
@@ -167,11 +167,11 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Date Reported <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control form-control-lg" id="date_reported" max="<?= date('Y-m-d') ?>" required>
+                            <input type="date" class="form-control form-control-lg" id="date_reported" onkeydown="return false" max="<?= date('Y-m-d') ?>" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Date of Incident <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control form-control-lg" id="date_incident" max="<?= date('Y-m-d') ?>" required>
+                            <input type="date" class="form-control form-control-lg" id="date_incident" onkeydown="return false" max="<?= date('Y-m-d') ?>" required>
                         </div>
                     </div>
 

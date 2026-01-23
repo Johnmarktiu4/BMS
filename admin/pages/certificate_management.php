@@ -396,7 +396,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="dob" readonly>
+                        <input type="date" class="form-control" onkeydown="return false" id="dob" readonly>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Civil Status <span class="text-danger">*</span></label>

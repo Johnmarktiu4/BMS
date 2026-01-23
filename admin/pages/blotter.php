@@ -215,7 +215,7 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <input type="date" class="form-control" id="dateFilter">
+                        <input type="date" class="form-control" onkeydown="return false" id="dateFilter">
                     </div>
                     <div class="col-md-2">
                         <button class="btn btn-outline-danger w-100" onclick="clearFilters()">Clear</button>
@@ -269,7 +269,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Date Filed *</label>
-                                <input type="date" class="form-control form-control-lg" id="date_filed" max="<?= date('Y-m-d') ?>" required>
+                                <input type="date" class="form-control form-control-lg" onkeydown="return false" id="date_filed" max="<?= date('Y-m-d') ?>" required>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Incident Time *</label>
@@ -298,7 +298,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Hearing Schedule Date *</label>
-                                <input type="date" class="form-control form-control-lg" id="date_schedule" min="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" value="<?= date('Y-m-d') ?>" required>
+                                <input type="date" class="form-control form-control-lg" id="date_schedule" onkeydown="return false" min="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" value="<?= date('Y-m-d') ?>" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Hearing Time *</label>
@@ -496,7 +496,7 @@
                     <input type="hidden" id="scheduleHearingNumber">
                     <div class="mb-3">
                         <label class="form-label">Hearing Date</label>
-                        <input type="date" class="form-control" id="hearing_date" required>
+                        <input type="date" class="form-control" onkeydown="return false" id="hearing_date" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Hearing Time</label>
@@ -533,7 +533,7 @@
                         <div class="row g-4 mb-4">
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Hearing Date *</label>
-                                <input type="date" class="form-control" id="record_hearing_date" name="record_hearing_date" min="<?=  date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" value="<?= date('Y-m-d') ?>" required>
+                                <input type="date" class="form-control" id="record_hearing_date" name="record_hearing_date" onkeydown="return false" min="<?=  date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" value="<?= date('Y-m-d') ?>" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Hearing Time *</label>
@@ -578,7 +578,7 @@
                         </div>
                         <div class="mb-4" id="record_hearing_date_div" name="record_hearing_date_div" style="display: none;">
                             <label class="form-label">Next Hearing Schedule Date *</label>
-                            <input type="date" class="form-control form-control-lg" id="date_schedule_record" min="<?= date('Y-m-d', strtotime('+1 days')) ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" value="<?= date('Y-m-d', strtotime('+15 days')) ?>" required>
+                            <input type="date" class="form-control form-control-lg" id="date_schedule_record" onkeydown="return false" min="<?= date('Y-m-d', strtotime('+1 days')) ?>" max="<?= date('Y-m-d', strtotime('+15 days')) ?>" value="<?= date('Y-m-d', strtotime('+15 days')) ?>" required>
                         </div>
                         <div class="mb-4" id="record_hearing_time_div" name="record_hearing_date_div" style="display: none;">
                             <label class="form-label">Next Hearing Time *</label>

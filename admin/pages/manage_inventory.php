@@ -151,11 +151,11 @@ require_once 'partials/db_conn.php';
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Transaction Date</label>
-                            <input type="date" class="form-control" name="transaction_date" value="<?= date('Y-m-d') ?>">
+                            <input type="date" class="form-control" name="transaction_date" onkeydown="return false" value="<?= date('Y-m-d') ?>">
                         </div>
                         <div id="expirationByField" style="display : none;">
                             <label class="form-label">Expiration Date</label>
-                            <input type="date" class="form-control"id="expiration_date" name="expiration_date" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>">
+                            <input type="date" class="form-control"id="expiration_date" name="expiration_date" onkeydown="return false" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Remarks</label>
@@ -243,7 +243,7 @@ require_once 'partials/db_conn.php';
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Transaction Date</label>
-                            <input type="date" class="form-control" name="transaction_date" value="<?= date('Y-m-d') ?>">
+                            <input type="date" class="form-control" name="transaction_date" onkeydown="return false" value="<?= date('Y-m-d') ?>">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Remarks</label>
