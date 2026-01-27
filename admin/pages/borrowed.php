@@ -266,7 +266,11 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
                 </div>
                 <div class="mt-3">
                     <label>Remarks</label>
-                    <textarea class="form-control" id="return_remarks" rows="3"></textarea>
+                    <select class="form-select" id="return_remarks">
+                        <option value="" disabled selected>Select reason...</option>
+                        <option value="Damaged">Damaged</option>
+                        <option value="Lost">Lost</option>
+                    </select>
                 </div>
             </div>
             <div class="modal-footer">
@@ -300,7 +304,11 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
                 </div>
                 <div class="mt-3">
                     <label>Remarks</label>
-                    <textarea class="form-control" id="return_remarks" rows="3"></textarea>
+                    <select class="form-select" id="return_remarks">
+                        <option value="" disabled selected>Select reason...</option>
+                        <option value="Damaged">Damaged</option>
+                        <option value="Lost">Lost</option>
+                    </select>
                 </div>
             </div>
             <div class="modal-footer">
