@@ -302,7 +302,8 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Hearing Time *</label>
-                                <input type="time" class="form-control form-control-lg" id="time_schedule" required>
+                                <input type="time" class="form-control form-control-lg" id="time_schedule" min="07:00" max="17:00" required>
+                                <small id="time_error_1st" style="color:red;"></small>
                             </div>
                         </div>
 
@@ -582,7 +583,8 @@
                         </div>
                         <div class="mb-4" id="record_hearing_time_div" name="record_hearing_date_div" style="display: none;">
                             <label class="form-label">Next Hearing Time *</label>
-                            <input type="time" class="form-control form-control-lg" id="time_schedule_record" required>
+                            <input type="time" class="form-control form-control-lg" id="time_schedule_record" min="07:00" max="17:00" required>
+                            <small id="time_error" style="color:red;"></small>
                         </div>
                     </form>
                 </div>
@@ -662,6 +664,36 @@
                 displayFile(file, type);
             }
         });
+
+        const timeInput = document.getElementById('time_schedule_record');
+        const timeInput2 = document.getElementById('time_schedule');
+
+
+        timeInput.addEventListener('input', function () {
+    const min = "07:00";
+    const max = "19:00";
+    const errorMsg = document.getElementById('time_error');
+
+    if (this.value < min || this.value > max) {
+        errorMsg.textContent = "Please select a time between 7:00 AM and 5:00 PM.";
+        this.value = "";
+
+    } else {
+        errorMsg.textContent = "";
+    }
+});
+
+timeInput2.addEventListener('input', function () {
+    const min = "07:00";
+    const max = "19:00";
+    const errorMsg = document.getElementById('time_error_1st');
+    if (this.value < min || this.value > max) {
+        errorMsg.textContent = "Please select a time between 7:00 AM and 5:00 PM.";
+        this.value = "";
+    } else {
+        errorMsg.textContent = "";
+    }
+});
 
         function displayFile(file, type) {
             $(`#${type}FileList`).html(`
@@ -1117,6 +1149,7 @@
                     timeHearing.style.display = 'block';
                 }
                 const allPeople = [...JSON.parse(currentBlotter.complainant_ids || '[]'), ...JSON.parse(currentBlotter.defendant_ids || '[]')];
+                console.log('All people involved:', allPeople);
                 const attendees = h.attendees ? JSON.parse(h.attendees) : [];
                 const $tbody = $('#attendeesTableBody').empty();
                 allPeople.forEach(p => {
@@ -1125,7 +1158,7 @@
                 <tr>
                     <td><input type="checkbox" class="attendee-check" data-name="${escapeHtml(p.name)}" ${checked}></td>
                     <td>${escapeHtml(p.name)}</td>
-                    <td><span class="badge bg-${p.is_resident ? 'info' : 'warning'}">${p.is_resident ? 'Resident' : 'Non-Resident'}</span></td>
+                    <td><span class="badge bg-${p.is_resident ? 'info' : 'warning'}">${p.is_resident ? 'Resident' : 'Non-Resident'}, ${currentBlotter.complainant_ids.includes(p.name) ? 'Complainant' : 'Defendant'}</span></td>
                 </tr>
             `);
                 });

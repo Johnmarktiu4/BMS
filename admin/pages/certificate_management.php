@@ -404,7 +404,17 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Purpose <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="purpose" placeholder="Employment, School requirement, etc.">
+                        <select class="form-select" id="purpose">
+                            <option value="" disabled selected>Select purpose...</option>
+                            <option value="Employment">Employment</option>
+                            <option value="Business Permit">Business Permit</option>
+                            <option value="School Requirement">School Requirement</option>
+                            <option value="Travel">Travel</option>
+                            <option value="Loan Application">Loan Application</option>
+                            <option value="Medical">Medical</option>
+                            <option value="Scholar">Scholar</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
                     <div class="mb-3" id="residencyYearsDiv" style="display:none;">
                         <label class="form-label">Years of Residency</label>

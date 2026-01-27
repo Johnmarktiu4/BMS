@@ -1052,6 +1052,7 @@
             form.reportValidity();
             return;
         }
+
         if (!$('#lat').val() || !$('#lng').val()) {
             alert('Please pin the location on the map.');
             return;
@@ -1086,6 +1087,7 @@
             }
         });
     }
+
 
     function loadResidents(page = 1) {
         currentPage = page;

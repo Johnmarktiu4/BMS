@@ -249,6 +249,11 @@ switch ($action) {
                 is_voter=$is_voter, year_of_residency='$year_of_residency', employment_status='$employment_status'
                 WHERE id=$id";
         } else {
+            $query = $conn->query("SELECT id FROM residents WHERE full_name = '$full_name' AND date_of_birth = '$date_of_birth' AND archived = 0");
+            if ($query && $query->num_rows > 0) {
+                echo json_encode(['success'=>false,'message'=>'Resident with the same name and date of birth already exists']);
+                exit;
+            }
             $sql = "INSERT INTO residents (
                 first_name, last_name, middle_name, suffix, full_name, civil_status, sex, date_of_birth, age,
                 place_of_birth, religion, nationality, house_number, street, province, municipality, zip_code,

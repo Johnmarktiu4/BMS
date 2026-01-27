@@ -63,7 +63,7 @@ if ($action === 'fetch_inventory') {
 elseif ($action === 'fetch_stock_monitoring') {
     $sql = "
         SELECT
-            i.id, i.item_name, i.description,
+            i.id, i.item_name, i.description, i.item_category,
             i.qty_on_hand, i.qty_received, i.qty_lost, i.qty_damaged, i.qty_replaced,
             i.current_stock, i.remarks, i.status,
             COALESCE(m.value, 0) AS declared_value, i.archived
@@ -128,6 +128,7 @@ elseif ($action === 'add_item') {
     $declared_value = $_POST['declared_value'] !== '' ? (float)$_POST['declared_value'] : null;
     $remarks = $conn->real_escape_string($_POST['remarks'] ?? '');
     $with_expiration = $conn->real_escape_string($_POST['with_expiration'] ?? 'No');
+    $itemCategory = $conn->real_escape_string($_POST['item_category'] ?? '');
     $is_with_expiry = 0;
     if (empty($item_name)) {
         $response['message'] = 'Item name is required';
@@ -165,8 +166,8 @@ elseif ($action === 'add_item') {
     $conn->begin_transaction();
     try {
         $conn->query("INSERT INTO inventory
-                      (item_name, description, current_stock, qty_on_hand, qty_received, status, remarks, with_expiration)
-                      VALUES ('$item_name', '$description', 0, 0, 0, 'Out of Stock', '$remarks', $is_with_expiry)");
+                      (item_name, description, current_stock, qty_on_hand, qty_received, status, remarks, with_expiration, item_category)
+                      VALUES ('$item_name', '$description', 0, 0, 0, 'Out of Stock', '$remarks', $is_with_expiry, '$itemCategory')");
         $item_id = $conn->insert_id;
         if ($declared_value !== null) {
             $value_str = (string)$declared_value;

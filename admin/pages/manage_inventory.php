@@ -45,6 +45,7 @@ require_once 'partials/db_conn.php';
                             <thead class="table-dark">
                                 <tr>
                                     <th>Item Name</th>
+                                    <th>Item Category</th>
                                     <th>Description</th>
                                     <th>Stock Status</th>
                                     <th>Current Stock</th>
@@ -81,6 +82,17 @@ require_once 'partials/db_conn.php';
                             <div class="col-md-6">
                                 <label class="form-label">Item Name *</label>
                                 <input type="text" class="form-control" id="itemName" name="item_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="itemCategory" class="form-label">Item Category *</label>
+                                <select class="form-select" id="itemCategory" name="item_category" required>
+                                    <option value="">Select</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Furniture">Furniture</option>
+                                    <option value="Medical">Medical</option>
+                                    <option value="Disaster">Disaster</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Description</label>
@@ -458,6 +470,7 @@ function updateStockMonitoringTable(items) {
 
             <tr>
                 <td><strong>${item.item_name}</strong></td>
+                <td><strong>${item.item_category}</strong></td>
                 <td>${item.description || '—'}</td>
                 <td class="text-center"><span class="badge ${isCriticalBadge}">${isCriticalType}</span></td>
                 <td class="text-center"><strong>${item.current_stock}</strong></td>
@@ -644,6 +657,8 @@ function editItem(id) {
             $('#description').val(i.description || '');
             $('#declaredValue').val(i.declared_value || '');
             $('#remarks').val(i.remarks || '');
+            $('#itemCategory').val(i.item_category);
+            $('#withExpiration').val(i.with_expiration == 1 ? 'Yes' : 'No');
             $('#addItemModalLabel').html('<i class="fas fa-edit me-2"></i>Edit Item');
             $('#addItemModal').modal('show');
         }
