@@ -32,13 +32,83 @@ require_once 'partials/db_conn.php';
         </div>
     </div>
 
-    <!-- Stock Monitoring Table -->
+    <!-- Inventory Table -->
     <div class="row">
         <div class="col-12">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-dark text-white">
                     <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Inventory</h5>
                 </div>
+
+                <!-- ===== Inventory Filters Toolbar ===== -->
+                <div class="p-3 border-bottom">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label for="invFilterQuery" class="form-label mb-1">Item / Keyword</label>
+                            <input type="text" id="invFilterQuery" class="form-control" placeholder="Item name, description, remarks...">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="invFilterCategory" class="form-label mb-1">Category</label>
+                            <select id="invFilterCategory" class="form-select">
+                                <option value="">All</option>
+                                <!-- options populated dynamically -->
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="invFilterStockStatus" class="form-label mb-1">Stock Status</label>
+                            <select id="invFilterStockStatus" class="form-select">
+                                <option value="">All</option>
+                                <option value="critical">Critical (≤ 10)</option>
+                                <option value="normal">Normal (&gt; 10)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="invFilterStatus" class="form-label mb-1">Status</label>
+                            <select id="invFilterStatus" class="form-select">
+                                <option value="">All</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="invFilterExpiry" class="form-label mb-1">With Expiration</label>
+                            <select id="invFilterExpiry" class="form-select">
+                                <option value="">All</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label mb-1">Current Stock (range)</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" id="invFilterStockMin" class="form-control" placeholder="Min">
+                                <input type="number" id="invFilterStockMax" class="form-control" placeholder="Max">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label mb-1">Declared Value per unit (range)</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" id="invFilterValueMin" class="form-control" placeholder="Min" step="0.01" min="0">
+                                <input type="number" id="invFilterValueMax" class="form-control" placeholder="Max" step="0.01" min="0">
+                            </div>
+                        </div>
+
+                        <div class="col-12 d-flex justify-content-between align-items-center mt-2">
+                            <small id="invFilterCount" class="text-muted"></small>
+                            <div class="d-flex gap-2">
+                                <button id="invFilterReset" class="btn btn-outline-secondary btn-sm">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ===== End Inventory Filters Toolbar ===== -->
+
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-striped table-hover mb-0" id="stockMonitoringTable">
@@ -167,7 +237,7 @@ require_once 'partials/db_conn.php';
                         </div>
                         <div id="expirationByField" style="display : none;">
                             <label class="form-label">Expiration Date</label>
-                            <input type="date" class="form-control"id="expiration_date" name="expiration_date" onkeydown="return false" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>">
+                            <input type="date" class="form-control" id="expiration_date" name="expiration_date" onkeydown="return false" value="<?= date('Y-m-d') ?>" min="<?= date('Y-m-d') ?>">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Remarks</label>
@@ -276,8 +346,14 @@ require_once 'partials/db_conn.php';
     const today = new Date().toISOString().split('T')[0];
     // Set the value of the input
     document.getElementById('expiration_date').value = today;
+
+    // === GLOBAL STATE ===
     let currentPage = 1;
     let inventory = [], selectedItems = [];
+    // NEW: Raw stock monitoring rows for filtering
+    let stockMonitoringData = [];
+    const CRITICAL_THRESHOLD = 10;
+
 function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
@@ -295,7 +371,9 @@ function loadStockMonitoring() {
         dataType: 'json',
         success: function(response) {
             if (response.status === 'success') {
-                updateStockMonitoringTable(response.data);
+                stockMonitoringData = response.data || [];
+                populateInventoryCategoryOptions(stockMonitoringData);
+                applyInventoryFilters(); // render filtered (initially unfiltered)
             } else {
                 showAlert('danger', response.message || 'Failed to load inventory.');
             }
@@ -450,11 +528,13 @@ function isWithExpirationSO() {
     }, 'json');
 }
 
+// === RENDER (inventory table) ===
 function updateStockMonitoringTable(items) {
     const tbody = $('#stockMonitoringTableBody');
     tbody.empty();
     if (!items.length) {
-        tbody.append('<tr><td colspan="6" class="text-center py-5 text-muted">No inventory items found.</td></tr>');
+        // colspan adjusted to match 13 table columns
+        tbody.append('<tr><td colspan="13" class="text-center py-5 text-muted">No inventory items found.</td></tr>');
         return;
     }
 
@@ -463,11 +543,10 @@ function updateStockMonitoringTable(items) {
         const totalValue = unitValue * item.current_stock;
         const archi = item.archived == 0 ? 'danger' : 'primary';
         const archivedStatus = item.archived == 1 ? 'Inactive' : 'Active';
-        const isCritical = item.current_stock <= 10;
+        const isCritical = item.current_stock <= CRITICAL_THRESHOLD;
         const isCriticalType = isCritical ? 'Critical' : 'Normal';
         const isCriticalBadge = isCritical ? 'bg-warning' : 'bg-primary';
         tbody.append(`
-
             <tr>
                 <td><strong>${item.item_name}</strong></td>
                 <td><strong>${item.item_category}</strong></td>
@@ -536,10 +615,9 @@ function updatePagination(totalItems, itemsPerPage, currentPage) {
     }
     $('#paginationLinks').html(pagination);
     const start = (currentPage - 1) * itemsPerPage + 1;
-    const end = Math.min(start * itemsPerPage, totalItems);
+    const end = Math.min(currentPage * itemsPerPage, totalItems);
     $('#paginationInfo').text(`Showing ${start} to ${end} of ${totalItems} entries`);
 }
-
 
 function printSingleReport(id) {
     window.open(`partials/generate_single_inventory_pdf.php?id=${id}`, '_blank');
@@ -580,7 +658,7 @@ function saveItem(proceedToStock = false) {
 }
 
 function performStockIn() {
-    const itemId = selectedItems[0].id;
+    const itemId = selectedItems[0]?.id;
     const qty = $('[name=quantity]', '#stockInForm').val();
     if (!itemId || !qty) return showAlert('warning', 'Please fill all required fields');
 
@@ -606,7 +684,7 @@ function performStockIn() {
 }
 
 function performStockOut() {
-    const itemId = selectedItems[0].id;
+    const itemId = selectedItems[0]?.id;
     const qty = $('[name=quantity]', '#stockOutForm').val();
     const action = $('[name=action_type]', '#stockOutForm').val();
     if (!itemId || !qty) return showAlert('warning', 'Please fill all required fields');
@@ -678,7 +756,8 @@ function archiveItem(id) {
     }, 'json');
 }
 
-    function debounce(func, wait) {
+// === UTILITIES ===
+function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
         clearTimeout(timeout);
@@ -691,6 +770,77 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// === FILTERING HELPERS (INVENTORY) ===
+function populateInventoryCategoryOptions(items) {
+    const $sel = $('#invFilterCategory');
+    const seen = new Set();
+    items.forEach(i => { if (i.item_category) seen.add(i.item_category); });
+    const opts = ['<option value="">All</option>']
+        .concat(Array.from(seen).sort((a,b) => a.localeCompare(b)).map(c =>
+            `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`));
+    $sel.html(opts.join(''));
+}
+function toNum(v, def = null) {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : def;
+}
+function applyInventoryFilters() {
+    const q           = $('#invFilterQuery').val().trim().toLowerCase();
+    const cat         = $('#invFilterCategory').val();
+    const stockStatus = $('#invFilterStockStatus').val(); // '', 'critical', 'normal'
+    const status      = $('#invFilterStatus').val();      // '', 'active', 'inactive'
+    const expiry      = $('#invFilterExpiry').val();      // '', 'yes', 'no'
+    const stockMin    = toNum($('#invFilterStockMin').val());
+    const stockMax    = toNum($('#invFilterStockMax').val());
+    const valMin      = toNum($('#invFilterValueMin').val());
+    const valMax      = toNum($('#invFilterValueMax').val());
+
+    const filtered = (stockMonitoringData || []).filter(item => {
+        const name = (item.item_name || '').toLowerCase();
+        const desc = (item.description || '').toLowerCase();
+        const remarks = (item.remarks || '').toLowerCase();
+        const category = (item.item_category || '');
+        const withExp = item.with_expiration; // may be 1/0/undefined
+        const archived = parseInt(item.archived, 10) || 0;
+        const currentStock = parseInt(item.current_stock, 10) || 0;
+        const unitValue = item.declared_value ? parseFloat(item.declared_value) : 0;
+
+        // Keyword in item name, description, or remarks
+        if (q && !(name.includes(q) || desc.includes(q) || remarks.includes(q))) return false;
+
+        // Category exact match
+        if (cat && category !== cat) return false;
+
+        // Stock status
+        if (stockStatus === 'critical' && !(currentStock <= CRITICAL_THRESHOLD)) return false;
+        if (stockStatus === 'normal'   && !(currentStock >  CRITICAL_THRESHOLD)) return false;
+
+        // Active/Inactive by archived flag (0 = active, 1 = inactive)
+        if (status === 'active'   && !(archived === 0)) return false;
+        if (status === 'inactive' && !(archived === 1)) return false;
+
+        // With Expiration
+        if (expiry === 'yes' && !(withExp == 1)) return false;
+        if (expiry === 'no'  && !(withExp == 0)) return false;
+
+        // Ranges
+        if (stockMin != null && currentStock < stockMin) return false;
+        if (stockMax != null && currentStock > stockMax) return false;
+        if (valMin   != null && unitValue    < valMin)   return false;
+        if (valMax   != null && unitValue    > valMax)   return false;
+
+        return true;
+    });
+
+    updateInventoryCount(filtered.length, (stockMonitoringData || []).length);
+    updateStockMonitoringTable(filtered);
+}
+function updateInventoryCount(visible, total) {
+    const el = document.getElementById('invFilterCount');
+    if (el) el.textContent = `Showing ${visible} of ${total} items`;
+}
+
+// === SELECTED ITEM (search) ===
 function addItemToBorrow(id, name, stock) {
     selectedItems = [];
     if (selectedItems.find(x => x.id == id)) {
@@ -734,48 +884,47 @@ function renderSelectedItems() {
     isWithExpiration();
 }
 
-
 // Item search
-    $('#itemSearchInput2').on('input', debounce(function() {
-        const query = this.value.trim().toLowerCase();
-        const $dd = $('#itemSearchDropdown2').empty();
-        if (!query) { $dd.hide(); return; }
-        const matches = inventory.filter(i => i.item_name.toLowerCase().includes(query) && parseInt(i.current_stock) > 0);
-        if (matches.length === 0) {
-            $dd.append('<div class="dropdown-item text-muted">No available items</div>').show();
-            return;
-        }
-        matches.forEach(item => {
-            $dd.append(`
-                <div class="dropdown-item" onclick="addItemToBorrow2(${item.id}, '${escapeHtml(item.item_name)}', ${item.current_stock})">
-                    <strong>${escapeHtml(item.item_name)}</strong>
-                    <span class="badge bg-secondary float-end">Stock: ${item.current_stock}</span>
-                </div>
-            `);
-        });
-        $dd.show();
-    }, 300));
+$('#itemSearchInput2').on('input', debounce(function() {
+    const query = this.value.trim().toLowerCase();
+    const $dd = $('#itemSearchDropdown2').empty();
+    if (!query) { $dd.hide(); return; }
+    const matches = inventory.filter(i => i.item_name.toLowerCase().includes(query) && parseInt(i.current_stock) > 0);
+    if (matches.length === 0) {
+        $dd.append('<div class="dropdown-item text-muted">No available items</div>').show();
+        return;
+    }
+    matches.forEach(item => {
+        $dd.append(`
+            <div class="dropdown-item" onclick="addItemToBorrow2(${item.id}, '${escapeHtml(item.item_name)}', ${item.current_stock})">
+                <strong>${escapeHtml(item.item_name)}</strong>
+                <span class="badge bg-secondary float-end">Stock: ${item.current_stock}</span>
+            </div>
+        `);
+    });
+    $dd.show();
+}, 300));
 
-        $('#itemSearchInput').on('input', debounce(function() {
-        const query = this.value.trim().toLowerCase();
-        const $dd = $('#itemSearchDropdown').empty();
-        if (!query) { $dd.hide(); return; }
-        console.log(inventory);
-        const matches = inventory.filter(i => i.item_name.toLowerCase().includes(query) && parseInt(i.current_stock) >= 0);
-        if (matches.length === 0) {
-            $dd.append('<div class="dropdown-item text-muted">No available items</div>').show();
-            return;
-        }
-        matches.forEach(item => {
-            $dd.append(`
-                <div class="dropdown-item" onclick="addItemToBorrow(${item.id}, '${escapeHtml(item.item_name)}', ${item.current_stock})">
-                    <strong>${escapeHtml(item.item_name)}</strong>
-                    <span class="badge bg-secondary float-end">Stock: ${item.current_stock}</span>
-                </div>
-            `);
-        });
-        $dd.show();
-    }, 300));
+$('#itemSearchInput').on('input', debounce(function() {
+    const query = this.value.trim().toLowerCase();
+    const $dd = $('#itemSearchDropdown').empty();
+    if (!query) { $dd.hide(); return; }
+    console.log(inventory);
+    const matches = inventory.filter(i => i.item_name.toLowerCase().includes(query) && parseInt(i.current_stock) >= 0);
+    if (matches.length === 0) {
+        $dd.append('<div class="dropdown-item text-muted">No available items</div>').show();
+        return;
+    }
+    matches.forEach(item => {
+        $dd.append(`
+            <div class="dropdown-item" onclick="addItemToBorrow(${item.id}, '${escapeHtml(item.item_name)}', ${item.current_stock})">
+                <strong>${escapeHtml(item.item_name)}</strong>
+                <span class="badge bg-secondary float-end">Stock: ${item.current_stock}</span>
+            </div>
+        `);
+    });
+    $dd.show();
+}, 300));
 
 $(document).ready(function() {
     loadStockMonitoring();
@@ -789,8 +938,35 @@ $(document).ready(function() {
         $('#addItemModalLabel').html('<i class="fas fa-box me-2"></i>Add New Item');
     });
     $('#stockInModal, #stockOutModal').on('show.bs.modal', loadItemsSelect);
+
+    // === Inventory filters bindings ===
+    const invDebounced = debounce(applyInventoryFilters, 200);
+    $('#invFilterQuery').on('input', invDebounced);
+    $('#invFilterCategory').on('change', applyInventoryFilters);
+    $('#invFilterStockStatus').on('change', applyInventoryFilters);
+    $('#invFilterStatus').on('change', applyInventoryFilters);
+    $('#invFilterExpiry').on('change', applyInventoryFilters);
+    $('#invFilterStockMin').on('input', invDebounced);
+    $('#invFilterStockMax').on('input', invDebounced);
+    $('#invFilterValueMin').on('input', invDebounced);
+    $('#invFilterValueMax').on('input', invDebounced);
+
+    $('#invFilterReset').on('click', function(e) {
+        e.preventDefault();
+        $('#invFilterQuery').val('');
+        $('#invFilterCategory').val('');
+        $('#invFilterStockStatus').val('');
+        $('#invFilterStatus').val('');
+        $('#invFilterExpiry').val('');
+        $('#invFilterStockMin').val('');
+        $('#invFilterStockMax').val('');
+        $('#invFilterValueMin').val('');
+        $('#invFilterValueMax').val('');
+        applyInventoryFilters();
+    });
 });
 </script>
+
 <style>
     .card {
         border-radius: 0.75rem;
@@ -833,7 +1009,6 @@ $(document).ready(function() {
         background-color: #f8f9fa;
     }
 
-    /* === BUTTON CONSISTENCY === */
     .btn-md {
         min-height: 48px;
         padding: 0.5rem 1rem;
@@ -845,7 +1020,6 @@ $(document).ready(function() {
         font-size: 1.1rem;
     }
 
-    /* === MODAL CONSISTENCY === */
     .modal-content {
         border: none;
         border-radius: 0.75rem;
@@ -872,7 +1046,6 @@ $(document).ready(function() {
         min-width: 110px;
     }
 
-    /* === FORM CONTROL FOCUS === */
     .form-control,
     .form-select {
         border-radius: 0.5rem;
@@ -885,7 +1058,6 @@ $(document).ready(function() {
         box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
     }
 
-    /* === RESPONSIVE === */
     @media (max-width: 992px) {
         .btn-md {
             width: 100%;
@@ -894,13 +1066,11 @@ $(document).ready(function() {
     }
 
     @media (max-width: 768px) {
-
         .table th,
         .table td {
             padding: 0.5rem;
             font-size: 0.85rem;
         }
-
         .modal-lg {
             max-width: 95%;
             margin: 1rem auto;
@@ -908,22 +1078,18 @@ $(document).ready(function() {
     }
 
     @media (max-width: 576px) {
-
         .modal-header,
         .modal-body,
         .modal-footer {
             padding: 1rem;
         }
-
         .table th,
         .table td {
             font-size: 0.8rem;
         }
-
         .card-body {
             padding: 0.75rem;
         }
-
         .btn-md {
             font-size: 0.9rem;
             padding: 0.5rem 0.75rem;

@@ -324,7 +324,7 @@ closeDBConnection($conn);
                 <div class="big-number"><?php echo number_format($total_residents); ?></div>
                 <div class="stat-grid">
                     <div class="stat-item"><a onclick="loadResidentList('Male')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-gender-male"></i><div class="label">Male</div><div class="value"><?php echo number_format($male); ?></div></a></div>
-                    <div class="stat-item"><a onclick="loadResidentList('Female')" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-gender-female"></i><div class="label">Female</div><div class="value"><?php echo number_format($female); ?></div></a></div>
+                    <div class="stat-item"><a onclick="loadResidentList('Female')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-gender-female"></i><div class="label">Female</div><div class="value"><?php echo number_format($female); ?></div></a></div>
 
                     <!-- VOTERS COUNT ADDED HERE, RIGHT NEXT TO MALE -->
                     <div class="stat-item"><a onclick="loadResidentList('Voters')" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#residentModal"><i class="bi bi-check2-circle"></i><div class="label">Registered Voter</div><div class="value"><?php echo number_format($voters); ?></div></a></div>
@@ -374,7 +374,7 @@ closeDBConnection($conn);
         <div class="col">
             <div class="card chart-card">
                 <h5 class="text-success mb-4">System Overview</h5>
-                <canvas id="overviewChart"></canvas>
+                <canvas id="overviewChart" style="cursor:pointer;"></canvas>
             </div>
         </div>
     </div>
@@ -491,19 +491,58 @@ closeDBConnection($conn);
     }
 
 document.addEventListener('DOMContentLoaded', function() {
+    
+const targetUrls = [
+        'layout.php?page=resident_management',   // 0: Residents
+        'layout.php?page=complaint',    // 1: Blotters
+        'layout.php?page=blotter',  // 2: Complaints
+        'layout.php?page=incident'    // 3: Incidents
+    ];
+
     new Chart(document.getElementById('overviewChart'), {
         type: 'bar',
         data: {
             labels: ['Residents', 'Blotters', 'Complaints', 'Incidents'],
             datasets: [{
                 label: 'Count',
-                data: [<?php echo $total_residents; ?>, <?php echo $count_blotters; ?>, <?php echo $count_complaints; ?>, <?php echo $count_incidents; ?>],
+                data: [<?= $total_residents; ?>, <?= $count_blotters; ?>, <?= $count_complaints; ?>, <?= $count_incidents; ?>],
                 backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
-                borderRadius: 8
+                borderRadius: 8,
             }]
         },
-        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: { y: { beginAtZero: true } },
+
+            // 🔽 Add click-to-redirect here
+            onClick: (evt, _elements, chart) => {
+                // Use Chart.js v3+ API to get the clicked element
+                const points = chart.getElementsAtEventForMode(
+                    evt,
+                    'nearest',
+                    { intersect: true },
+                    true
+                );
+                if (!points.length) return;
+
+                const barIndex = points[0].index; // 0..3
+                const url = targetUrls[barIndex];
+                if (url) window.location.href = url; // redirect
+            },
+
+            // Optional: show pointer on hover to indicate clickability
+            hover: {
+                onHover: (evt, activeEls) => {
+                    const canvas = evt.native ? evt.native.target : evt.target;
+                    canvas.style.cursor = activeEls.length ? 'pointer' : 'default';
+                }
+            }
+        }
     });
+
 
     const map = L.map('map').setView([14.463331, 120.884745], 19);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

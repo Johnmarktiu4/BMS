@@ -404,7 +404,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Purpose <span class="text-danger">*</span></label>
-                        <select class="form-select" id="purpose">
+                        <select class="form-select" id="purpose" onchange="selectedOthers()">
                             <option value="" disabled selected>Select purpose...</option>
                             <option value="Employment">Employment</option>
                             <option value="Business Permit">Business Permit</option>
@@ -659,6 +659,22 @@
                 document.body.style.overflow = '';
                 document.body.style.paddingRight = '';
             }, 300);
+        }
+
+        function selectedOthers() {
+            const purposeSelect = document.getElementById('purpose');
+            if (purposeSelect.value === 'Other') {
+                const otherPurpose = prompt('Please specify the purpose:');
+                if (otherPurpose) {
+                    const newOption = document.createElement('option');
+                    newOption.value = otherPurpose;
+                    newOption.textContent = otherPurpose;
+                    newOption.selected = true;
+                    purposeSelect.appendChild(newOption);
+                } else {
+                    purposeSelect.value = '';
+                }
+            }
         }
 
         // === CERTIFICATE GENERATION (FULL ORIGINAL HTML) ===
