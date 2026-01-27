@@ -568,14 +568,14 @@ elseif ($action === 'replace_multiple') {
             }
 
             // Record damaged/lost (does NOT go back to stock)
-            if ($remarks == 'Damaged') {
+            if ($remarks === "Damaged") {
                 $conn->query("UPDATE inventory SET qty_damaged = qty_damaged + $replace_qty WHERE id = $inventory_id");
                 // $conn->query("INSERT INTO inventory_transactions
                 //               (inventory_id, action_type, quantity, transaction_date, returned_date, remarks, borrower_id)
                 //               VALUES ($inventory_id, 'Broken', $damaged_qty, '$today', '$today', 'Damaged/Lost: $remarks', $borrower_id)");
             }
 
-            if ($remarks == 'Lost') {
+            if ($remarks === "Lost") {
                 $conn->query("UPDATE inventory SET qty_lost = qty_lost + $replace_qty WHERE id = $inventory_id");
             }
 
@@ -644,14 +644,14 @@ elseif ($action === 'pay_multiple') {
             }
 
             // Record damaged/lost (does NOT go back to stock)
-            if ($remarks == 'Damaged') {
+            if ($remarks === "Damaged") {
                 $conn->query("UPDATE inventory SET qty_damaged = qty_damaged + $pay_qty WHERE id = $inventory_id");
                 // $conn->query("INSERT INTO inventory_transactions
                 //               (inventory_id, action_type, quantity, transaction_date, returned_date, remarks, borrower_id)
                 //               VALUES ($inventory_id, 'Broken', $damaged_qty, '$today', '$today', 'Damaged/Lost: $remarks', $borrower_id)");
             }
 
-            if ($remarks == 'Lost') {
+            if ($remarks === "Lost") {
                 $conn->query("UPDATE inventory SET qty_lost = qty_lost + $pay_qty WHERE id = $inventory_id");
             }
 

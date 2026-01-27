@@ -266,7 +266,7 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
                 </div>
                 <div class="mt-3">
                     <label>Remarks</label>
-                    <select class="form-select" id="return_remarks">
+                    <select class="form-select" id="return_remarks1">
                         <option value="" disabled selected>Select reason...</option>
                         <option value="Damaged">Damaged</option>
                         <option value="Lost">Lost</option>
@@ -304,7 +304,7 @@ $loggedInUserName = $_SESSION['full_name'] ?? 'Guest User';
                 </div>
                 <div class="mt-3">
                     <label>Remarks</label>
-                    <select class="form-select" id="return_remarks">
+                    <select class="form-select" id="return_remarks2">
                         <option value="" disabled selected>Select reason...</option>
                         <option value="Damaged">Damaged</option>
                         <option value="Lost">Lost</option>
@@ -920,11 +920,12 @@ function saveReplace() {
     });
 
     if (replaces.length === 0) return alert('No items to replace');
+    console.log($('#return_remarks1').val());
 
     $.post('partials/inventory_management_api.php', {
         action: 'replace_multiple',
         replace: JSON.stringify(replaces),
-        remarks: $('#return_remarks').val()
+        remarks: $('#return_remarks1').val()
     }, function(r) {
         if (r.status === 'success') {
             $('#returnModal2').modal('hide');
@@ -951,7 +952,7 @@ function savePay() {
     $.post('partials/inventory_management_api.php', {
         action: 'pay_multiple',
         pay: JSON.stringify(pays),
-        remarks: $('#return_remarks').val()
+        remarks: $('#return_remarks2').val()
     }, function(r) {
         if (r.status === 'success') {
             $('#returnModal3').modal('hide');
