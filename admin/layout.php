@@ -19,7 +19,7 @@ $allowed_pages = [
     'barangay_management', 'certificate_management', 'manage_inventory', 'borrowed',
     'case_report', 'complaint', 'incident', 'blotter',
     'role_accounts', 'system_logs', 'backup_restore', 'profile',
-    'barangay_archive', 'former_officials', 'system_settings', 'mapping'
+    'barangay_archive', 'former_officials', 'system_settings', 'mapping', 'dropdown_management'
 ];
 
 // Restrict non-full-access users (updated per your request)
@@ -40,7 +40,7 @@ if (!$is_full_access) {
     'barangay_management', 'certificate_management', 'manage_inventory', 'borrowed',
     'case_report', 'complaint', 'incident', 'blotter',
     'role_accounts', 'system_logs', 'backup_restore', 'profile',
-    'barangay_archive', 'former_officials', 'system_settings', 'mapping'
+    'barangay_archive', 'former_officials', 'system_settings', 'mapping', 'dropdown_management'
     ];
 }
 $page = isset($_GET['page']) ? basename($_GET['page']) : 'dashboard';
@@ -224,9 +224,17 @@ $pagePath = "pages/$page.php";
                     <a href="?page=backup_restore" class="menu-item <?php echo $page=='backup_restore'?'active':''; ?>">
                         <i class="fas fa-cloud-download-alt"></i> Backup & Restore
                     </a>
-                    <a href="?page=system_settings" class="menu-item <?php echo $page=='system_settings'?'active':''; ?>">
+                    <a href="#" class="menu-item has-submenu <?php echo in_array($page,['term_management','system_variable'])?'active':''; ?>">
                         <i class="fas fa-cog"></i> System Settings
                     </a>
+                    <div class="submenu <?php echo in_array($page,['resident_management','archive_residents'])?'active':''; ?>">
+                        <a href="?page=system_settings" class="menu-item <?php echo $page=='system_settings'?'active':''; ?>">
+                              <i class="fas fa-cog"></i> Term Management
+                        </a>
+                        <a href="?page=dropdown_management" class="menu-item <?php echo $page=='dropdown_management'?'active':''; ?>">
+                            <i class="fas fa-cog"></i> Dropdown Management
+                        </a>
+                    </div>
                 <?php endif; ?>
             <?php endif; ?>
 

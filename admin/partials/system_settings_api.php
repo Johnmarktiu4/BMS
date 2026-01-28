@@ -149,6 +149,84 @@ switch ($action) {
         } else {
             echo json_encode(['success'=>false,'message'=>'Failed to set as active: ' . $conn->error]);
         }
+        break;
+    case 'save_dropdown':
+    case 'update_dropdown':
+        $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+        $is_update = ($action === 'update_dropdown' && $id > 0);
+
+        if (!isset($_POST['optionName']) || !isset($_POST['category']) || !isset($_POST['status'])) {
+            echo json_encode(['success' => false, 'message' => 'All fields are required']);
+            break;
+        }
+
+        if ($is_update) {
+            $sql = "UPDATE dropdowns SET options = ?, category = ?, status = ? WHERE id = ?";
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) {
+                echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+                break;
+            }
+            $stmt->bind_param('sssi', $_POST['optionName'], $_POST['category'], $_POST['status'], $id);
+            if ($stmt->execute()) {
+                echo json_encode(['success' => true, 'message' => 'Dropdown option updated successfully.']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to update dropdown option: ' . $stmt->error]);
+            }
+            $stmt->close();
+        } else {
+            $sql = "INSERT INTO dropdowns (options, category, status, created_date) VALUES (?, ?, ?, NOW())";
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) {
+                echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+                break;
+            }
+            $stmt->bind_param('sss', $_POST['optionName'], $_POST['category'], $_POST['status']);
+            if ($stmt->execute()) {
+                echo json_encode(['success' => true, 'message' => 'Dropdown option saved successfully.']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to save dropdown option: ' . $stmt->error]);
+            }
+            $stmt->close();
+        }
+        break;
+    case 'get_dropdowns':
+        $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
+        $status = isset($_GET['status']) ? $conn->real_escape_string($_GET['status']) : '';
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+        $offset = ($page - 1) * $limit;
+        
+        $dropdowns = [];
+
+        $where = 'WHERE 1 = 1';
+        if ($search) {
+            $where .= " AND (options LIKE '%$search%' OR category LIKE '%$search%' OR status LIKE '%$search%')";
+        }
+        if ($status) {
+            $where .= " AND status = '$status'";
+        }
+        $sql = "SELECT id, options, category, status FROM dropdowns $where ORDER BY id DESC LIMIT $limit OFFSET $offset";
+        $res = $conn->query($sql);
+        while ($row = $res->fetch_assoc()) {
+            $dropdowns[] = $row;
+        }
+        echo json_encode(['success'=>true,'dropdowns'=>$dropdowns]);
+        break;
+    case 'get_dropdown':
+        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        if ($id <= 0) {
+            echo json_encode(['success'=>false,'message'=>'Invalid ID']);
+            exit;
+        }
+        $sql = "SELECT * FROM dropdowns WHERE id = $id";
+        $res = $conn->query($sql);
+        if ($row = $res->fetch_assoc()) {
+            echo json_encode(['success'=>true,'dropdown'=>$row]);
+        } else {
+            echo json_encode(['success'=>false,'message'=>'Dropdown option not found']);
+        }
+        break;
 }
 
 $conn->close();
