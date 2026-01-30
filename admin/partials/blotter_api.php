@@ -260,6 +260,18 @@ switch ($action) {
         echo json_encode(['success' => true, 'data' => $data]);
         break;
 
+    case 'fetch_dropdown_options':
+        $search = isset($_POST['search']) ? $conn->real_escape_string($_POST['search']) : '';
+        $stmt = $conn->prepare("SELECT DISTINCT options FROM dropdowns WHERE category = ? AND status = 'Active'");
+        $searchTerm = "$search";
+        $stmt->bind_param("s", $searchTerm);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $data = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        echo json_encode(['success' => true, 'data' => $data]);
+        break;
+
     default:
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
         break;

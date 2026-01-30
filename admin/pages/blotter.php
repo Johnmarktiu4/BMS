@@ -189,7 +189,7 @@
                 <p class="text-muted mb-0">Manage all barangay complaint records and hearings</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#blotterModal">
+                <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#blotterModal" onclick="natureOfComplaintsDropdown();">
                     <i class="fas fa-plus me-2"></i> File Complaint
                 </button>
                 <a href="partials/generate_blotter_pdf.php?full_name=<?php echo $_SESSION['full_name']; ?>" target="_blank" class="btn btn-success shadow-sm text-white">
@@ -467,7 +467,8 @@
                         <div class="row g-5 mt-5">
                             <div class="col-12">
                                 <label class="form-label">Nature of Complaint *</label>
-                                <input type="text" class="form-control form-control-lg" id="nature_of_complaint" required>
+                                <select name="nature_of_complaint" id="nature_of_complaint" class="form-select" required>
+                                </select>
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Incident Details *</label>
@@ -1320,6 +1321,33 @@ timeInput2.addEventListener('input', function () {
         el.setSelectionRange(newStart, newEnd);
         }
     });
+
+    function natureOfComplaintsDropdown() {
+        const dropdown = document.getElementById('nature_of_complaint');
+        const search = "Forgot Password";
+        $.ajax({
+            url: 'partials/blotter_api.php',
+            type: 'POST',
+            data: { search: search, action: 'fetch_dropdown_options' },
+            success: function(response) {
+                dropdown.options.length = 0; // Clear existing options
+                const option1 = document.createElement('option');
+                option1.value = "";
+                option1.textContent = "Select Nature of Complaint";
+                dropdown.appendChild(option1);
+                response.data.forEach(item => {
+                    const option = document.createElement('option');
+                    console.log(item.options);
+                    option.value = item.options;
+                    option.textContent = item.options;
+                    dropdown.appendChild(option);
+                });
+            },
+            error: function() {
+                console.error('Error fetching nature of complaints.');
+            }
+        });
+    }
 
         $(document).ready(() => {
             loadResidents();
