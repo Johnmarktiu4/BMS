@@ -1324,7 +1324,7 @@ timeInput2.addEventListener('input', function () {
 
     function natureOfComplaintsDropdown() {
         const dropdown = document.getElementById('nature_of_complaint');
-        const search = "Forgot Password";
+        const search = "Nature of Complaints";
         $.ajax({
             url: 'partials/blotter_api.php',
             type: 'POST',
