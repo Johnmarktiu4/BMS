@@ -272,7 +272,7 @@ closeDBConnection($conn);
                     <?php if ($due_count > 0): ?>
                         <div class="list-group list-group-flush" style="max-height: 60vh; overflow-y: auto;">
                             <?php foreach ($notifications as $notif): ?>
-                                <a href="http://localhost/bms/admin/layout.php?page=borrowed" class="list-group-item list-group-item-action px-4 py-3 border-0">
+                                <a href="?page=borrowed" class="list-group-item list-group-item-action px-4 py-3 border-0">
                                     <div class="d-flex w-100 justify-content-between align-items-start">
                                         <div class="me-3">
                                             <i class="bi bi-box-seam text-warning fs-5"></i>
@@ -300,7 +300,7 @@ closeDBConnection($conn);
                             <?php endforeach; ?>
                         </div>
                         <div class="p-3 border-top bg-light">
-                            <a href="http://localhost/bms/admin/layout.php?page=borrowed" class="btn btn-success w-100">
+                            <a href="?page=borrowed" class="btn btn-success w-100">
                                 Go to Inventory
                             </a>
                         </div>

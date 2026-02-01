@@ -1,16 +1,109 @@
 <?php
 // admin/pages/backup_restore.php
-// Only UI — NO backup logic here
- 
+// Option B: Show restore message immediately (no redirect/reload)
+declare(strict_types=1);
+
+// --- Bootstrap (must be before any HTML) ---
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+// --- DB config: adjust to your environment ---
+$db_host = 'localhost';
+$db_user = 'root';
+$db_pass = '';
+$db_name = 'bms';
+
+// CSRF token
 if (empty($_SESSION['csrf'])) {
     $_SESSION['csrf'] = bin2hex(random_bytes(32));
 }
-?>
 
+// Will hold the message to display immediately after processing
+$inline_message = '';
+
+// -------------------- RESTORE HANDLER (runs before HTML) --------------------
+if (isset($_POST['restore'])) {
+    $errorMsg = '';
+
+    // CSRF
+    if (!isset($_POST['csrf']) || !hash_equals($_SESSION['csrf'], $_POST['csrf'])) {
+        $inline_message = "<div class='alert alert-danger'>Invalid request token.</div>";
+    } elseif (!isset($_FILES['restore_file']) || ($_FILES['restore_file']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        $err = $_FILES['restore_file']['error'] ?? 'Unknown';
+        $inline_message = "<div class='alert alert-danger'>File upload failed (code: {$err}).</div>";
+    } else {
+        $file = $_FILES['restore_file'];
+
+        // Size: 50MB max
+        $maxBytes = 50 * 1024 * 1024;
+        if (($file['size'] ?? 0) > $maxBytes) {
+            $inline_message = "<div class='alert alert-danger'>File exceeds 50MB limit.</div>";
+        } else {
+            // Extension
+            $ext = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+            if ($ext !== 'sql') {
+                $inline_message = "<div class='alert alert-danger'>Only .sql files are allowed.</div>";
+            } else {
+                // Move to temp
+                $tmpDest = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('restore_', true) . '.sql';
+                if (!move_uploaded_file($file['tmp_name'], $tmpDest)) {
+                    $inline_message = "<div class='alert alert-danger'>Failed to move uploaded file.</div>";
+                } else {
+                    // Connect DB
+                    $mysqli = @new mysqli($db_host, $db_user, $db_pass, $db_name);
+                    if ($mysqli->connect_error) {
+                        @unlink($tmpDest);
+                        $inline_message = "<div class='alert alert-danger'>DB connection failed: " . htmlspecialchars($mysqli->connect_error) . "</div>";
+                    } else {
+                        @set_time_limit(300); // long import allowed
+
+                        // Optional: drop all objects first
+                        $dropAll = isset($_POST['drop_all']) && $_POST['drop_all'] === '1';
+                        if ($dropAll) {
+                            $dropErr = '';
+                            if (!drop_all_tables_and_views($mysqli, $db_name, $dropErr)) {
+                                @unlink($tmpDest);
+                                $inline_message = "<div class='alert alert-danger'>Failed to drop all tables: " . htmlspecialchars($dropErr) . "</div>";
+                            }
+                        }
+
+                        // If no prior error, restore
+                        if ($inline_message === '') {
+                            $ok = restore_sql_file($mysqli, $tmpDest, $db_name, $errorMsg);
+                            @unlink($tmpDest);
+
+                            if ($ok) {
+                                $inline_message = "<div class='alert alert-success'>Database restored successfully.</div>";
+                                // Avoid “resubmit form” prompt on refresh (no reload needed)
+                                // We'll print a small script after the message down in HTML
+                            } else {
+                                $inline_message = "<div class='alert alert-danger'>Restore failed: " . htmlspecialchars($errorMsg) . "</div>";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+?>
+<!-- -------------------- PAGE HTML -------------------- -->
 <div class="row">
     <div class="col-12">
-        <h2 class="mb-4">Backup & Restore Database</h2>
+        <h2 class="mb-4">Backup &amp; Restore Database</h2>
         <p class="text-muted">Securely manage your BMS database.</p>
+
+        <?php if (!empty($inline_message)): ?>
+            <div class="mt-2"><?= $inline_message ?></div>
+            <!-- Replace the current history state to prevent resubmit on refresh -->
+            <script>
+                if (history.replaceState) {
+                    history.replaceState(null, '', location.pathname + location.search);
+                }
+            </script>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -42,25 +135,27 @@ if (empty($_SESSION['csrf'])) {
                 Restore Database
             </div>
             <div class="card-body">
-                <p>Upload .sql file to restore.</p>          
-                    <form method="post" enctype="multipart/form-data">
-                        <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf']) ?>">
-                        <div class="mb-3">
-                            <label class="form-label">Backup File</label>
-                            <input type="file" class="form-control" name="restore_file" accept=".sql" required>
-                            <div class="form-text">Max 50MB</div>
-                        </div>
-                        <button type="submit" name="restore" class="btn btn-warning btn-lg w-100 text-dark"
-                                onclick="return confirm('This will overwrite all data. Continue?');">
-                            Restore Now
-                        </button>
-                    </form>
-                <?php
-                if (isset($_SESSION['restore_message'])) {
-                    echo "<div class='mt-3'>" . $_SESSION['restore_message'] . "</div>";
-                    unset($_SESSION['restore_message']);
-                }
-                ?>
+                <p>Upload .sql file to restore.</p>
+                <form id="restore-form" method="post" enctype="multipart/form-data" action="">
+                    <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf']) ?>">
+                    <div class="mb-3">
+                        <label class="form-label">Backup File</label>
+                        <input type="file" class="form-control" name="restore_file" accept=".sql" required>
+                        <div class="form-text">Max 50MB</div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="drop_all" name="drop_all" value="1">
+                        <label class="form-check-label" for="drop_all">
+                            Drop all tables before restore (clean slate)
+                        </label>
+                    </div>
+
+                    <button type="submit" name="restore" class="btn btn-warning btn-lg w-100 text-dark"
+                            onclick="return confirm('This will ' + (document.getElementById('drop_all').checked ? 'DROP ALL TABLES and ' : '') + 'overwrite data. Continue?');">
+                        Restore Now
+                    </button>
+                </form>
             </div>
             <div class="card-footer text-danger small">
                 <strong>Warning:</strong> Irreversible action.
@@ -78,20 +173,45 @@ if (empty($_SESSION['csrf'])) {
             </div>
             <div class="card-body">
                 <?php
-                $backupDir = 'backups/';
+                // Helper available here for human-readable sizes
+                if (!function_exists('formatBytes')) {
+                    function formatBytes(int $bytes, int $precision = 2): string {
+                        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+                        $bytes = max($bytes, 0);
+                        $pow = $bytes > 0 ? floor(log($bytes, 1024)) : 0;
+                        $pow = min($pow, count($units) - 1);
+                        $bytes /= (1 << (10 * $pow));
+                        return round($bytes, $precision) . ' ' . $units[$pow];
+                    }
+                }
+
+                $backupDir = 'backups/'; // relative to this page's URL
                 if (is_dir($backupDir)) {
-                    $files = array_diff(scandir($backupDir), ['.', '..']);
-                    $sqlFiles = array_filter($files, fn($f) => pathinfo($f, PATHINFO_EXTENSION) === 'sql');
-                    if (empty($sqlFiles)) {
+                    $files = array_values(array_filter(
+                        array_diff(scandir($backupDir), ['.', '..']),
+                        static function ($f) use ($backupDir) {
+                            return is_file($backupDir . $f) && strtolower(pathinfo($f, PATHINFO_EXTENSION)) === 'sql';
+                        }
+                    ));
+
+                    if (empty($files)) {
                         echo "<p class='text-muted'>No backups yet.</p>";
                     } else {
+                        // Newest first
+                        usort($files, static function ($a, $b) use ($backupDir) {
+                            return filemtime($backupDir . $b) <=> filemtime($backupDir . $a);
+                        });
+
                         echo "<div class='list-group'>";
-                        foreach (array_reverse($sqlFiles) as $file) {
+                        foreach ($files as $file) {
                             $path = $backupDir . $file;
-                            $size = formatBytes(filesize($path));
-                            $date = date('M j, Y g:i A', filemtime($path));
-                            echo "<a href='$path' download class='list-group-item list-group-item-action d-flex justify-content-between'>
-                                    <div>$file<br><small class='text-muted'>$date • $size</small></div>
+                            $size = formatBytes((int)filesize($path));
+                            $date = date('M j, Y g:i A', (int)filemtime($path));
+                            $safeFile = htmlspecialchars($file);
+                            $href = $backupDir . rawurlencode($file);
+
+                            echo "<a href='{$href}' download class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'>
+                                    <div>{$safeFile}<br><small class='text-muted'>{$date} • {$size}</small></div>
                                     <i class='fas fa-download text-success'></i>
                                   </a>";
                         }
@@ -106,121 +226,99 @@ if (empty($_SESSION['csrf'])) {
     </div>
 </div>
 
-
-
 <?php
-if (isset($_POST['restore'])) {
-    // --- CSRF check (optional) ---
-    if (!isset($_POST['csrf']) || !hash_equals($_SESSION['csrf'], $_POST['csrf'])) {
-        $_SESSION['restore_message'] = "<div class='alert alert-danger'>Invalid request token.</div>";
-        header("Location: " . $_SERVER['REQUEST_URI']);
-        exit;
+// -------------------- HELPERS --------------------
+
+/**
+ * Drop all views first, then all base tables, with FK checks toggled.
+ */
+function drop_all_tables_and_views(mysqli $mysqli, string $dbName, string &$errorMsg): bool
+{
+    $errorMsg = '';
+
+    if (!$mysqli->select_db($dbName)) {
+        $errorMsg = "Cannot select database: " . $mysqli->error;
+        return false;
     }
 
-    // --- Validate upload presence ---
-    if (!isset($_FILES['restore_file']) || $_FILES['restore_file']['error'] !== UPLOAD_ERR_OK) {
-        $err = $_FILES['restore_file']['error'] ?? 'Unknown';
-        $_SESSION['restore_message'] = "<div class='alert alert-danger'>File upload failed (code: $err).</div>";
-        header("Location: " . $_SERVER['REQUEST_URI']);
-        exit;
+    $escIdent = static function (string $ident): string {
+        return '`' . str_replace('`', '``', $ident) . '`';
+    };
+    $dbEsc = $escIdent($dbName);
+
+    if (!$mysqli->query("SET FOREIGN_KEY_CHECKS=0")) {
+        $errorMsg = "Cannot disable FOREIGN_KEY_CHECKS: " . $mysqli->error;
+        return false;
     }
 
-    $file = $_FILES['restore_file'];
-
-    // --- Validate size: 50MB max ---
-    $maxBytes = 50 * 1024 * 1024; // 50 MB
-    if ($file['size'] > $maxBytes) {
-        $_SESSION['restore_message'] = "<div class='alert alert-danger'>File exceeds 50MB limit.</div>";
-        header("Location: " . $_SERVER['REQUEST_URI']);
-        exit;
-    }
-
-    // --- Validate extension & MIME (best-effort) ---
-    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if ($ext !== 'sql') {
-        $_SESSION['restore_message'] = "<div class='alert alert-danger'>Only .sql files are allowed.</div>";
-        header("Location: " . $_SERVER['REQUEST_URI']);
-        exit;
-    }
-
-    // You can also check MIME, but many servers report text/plain or application/octet-stream.
-    // $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    // $mime = finfo_file($finfo, $file['tmp_name']);
-    // finfo_close($finfo);
-
-    // --- Move file to a temp location ---
-    $tmpDir = sys_get_temp_dir();
-    $destPath = $tmpDir . DIRECTORY_SEPARATOR . uniqid('restore_', true) . '.sql';
-
-    if (!move_uploaded_file($file['tmp_name'], $destPath)) {
-        $_SESSION['restore_message'] = "<div class='alert alert-danger'>Failed to move uploaded file.</div>";
-        header("Location: " . $_SERVER['REQUEST_URI']);
-        exit;
-    }
-
-    // --- Connect to DB ---
-    $mysqli = @new mysqli($db_host, $db_user, $db_pass, $db_name);
-    if ($mysqli->connect_error) {
-        @unlink($destPath);
-        $_SESSION['restore_message'] = "<div class='alert alert-danger'>DB connection failed: " . htmlspecialchars($mysqli->connect_error) . "</div>";
-        header("Location: " . $_SERVER['REQUEST_URI']);
-        exit;
-    }
-
-    // Increase time limit for long imports (adjust as needed)
-    @set_time_limit(300); // 5 minutes
-
-    // --- Perform restore ---
-    $ok = restore_sql_file($mysqli, $destPath, $db_name, $errorMsg);
-
-    // Cleanup temp file
-    @unlink($destPath);
-
-    if ($ok) {
-        $_SESSION['restore_message'] = "<div class='alert alert-success'>Database restored successfully.</div>";
+    // Drop views first
+    $views = [];
+    if ($res = $mysqli->query("SHOW FULL TABLES FROM {$dbEsc} WHERE Table_type='VIEW'")) {
+        while ($row = $res->fetch_array(MYSQLI_NUM)) {
+            $views[] = (string)$row[0];
+        }
+        $res->free();
     } else {
-        $_SESSION['restore_message'] = "<div class='alert alert-danger'>Restore failed: " . htmlspecialchars($errorMsg) . "</div>";
+        $mysqli->query("SET FOREIGN_KEY_CHECKS=1");
+        $errorMsg = "Cannot list views: " . $mysqli->error;
+        return false;
+    }
+    foreach ($views as $v) {
+        if (!$mysqli->query("DROP VIEW IF EXISTS " . $escIdent($v))) {
+            $mysqli->query("SET FOREIGN_KEY_CHECKS=1");
+            $errorMsg = "Error dropping view {$v}: " . $mysqli->error;
+            return false;
+        }
     }
 
-    // Redirect to avoid re-POST on refresh
-    header("Location: " . $_SERVER['REQUEST_URI']);
-    exit;
+    // Then drop tables
+    $tables = [];
+    if ($res2 = $mysqli->query("SHOW FULL TABLES FROM {$dbEsc} WHERE Table_type='BASE TABLE'")) {
+        while ($row = $res2->fetch_array(MYSQLI_NUM)) {
+            $tables[] = (string)$row[0];
+        }
+        $res2->free();
+    } else {
+        $mysqli->query("SET FOREIGN_KEY_CHECKS=1");
+        $errorMsg = "Cannot list tables: " . $mysqli->error;
+        return false;
+    }
+    foreach ($tables as $t) {
+        if (!$mysqli->query("DROP TABLE IF EXISTS " . $escIdent($t))) {
+            $mysqli->query("SET FOREIGN_KEY_CHECKS=1");
+            $errorMsg = "Error dropping table {$t}: " . $mysqli->error;
+            return false;
+        }
+    }
+
+    if (!$mysqli->query("SET FOREIGN_KEY_CHECKS=1")) {
+        $errorMsg = "Cannot re-enable FOREIGN_KEY_CHECKS: " . $mysqli->error;
+        return false;
+    }
+
+    return true;
 }
 
 /**
- * Restores a MySQL database from a .sql file using mysqli::multi_query.
- * Handles DELIMITER sections, transactions, and foreign key checks.
- *
- * @param mysqli $mysqli
- * @param string $filePath
- * @param string $dbName
- * @param string &$errorMsg
- * @return bool
+ * Restore SQL file using mysqli::multi_query() with transaction and FK handling.
  */
 function restore_sql_file(mysqli $mysqli, string $filePath, string $dbName, string &$errorMsg): bool
 {
     $errorMsg = '';
 
-    // Read entire file
     $sql = @file_get_contents($filePath);
     if ($sql === false) {
         $errorMsg = "Cannot read SQL file.";
         return false;
     }
 
-    // Ensure we use the target DB
-    // (Useful if the dump lacks explicit `USE db;`)
     if (!$mysqli->select_db($dbName)) {
         $errorMsg = "Cannot select database: " . $mysqli->error;
         return false;
     }
 
-    // Best-effort handling of DELIMITER sections:
-    // mysqli doesn't understand custom delimiters; we need to normalize them back to ';'
-    // This simplistic approach splits DELIMITER blocks and restores content.
     $normalizedSql = normalize_delimiters($sql);
 
-    // Wrap in a transaction; disable FK checks to avoid ordering issues on insert
     $mysqli->query("SET FOREIGN_KEY_CHECKS=0");
     $mysqli->begin_transaction();
 
@@ -228,7 +326,6 @@ function restore_sql_file(mysqli $mysqli, string $filePath, string $dbName, stri
         if (!$mysqli->multi_query($normalizedSql)) {
             throw new Exception("Initial query failed: " . $mysqli->error);
         }
-        // flush all results
         do {
             if ($result = $mysqli->store_result()) {
                 $result->free();
@@ -251,12 +348,8 @@ function restore_sql_file(mysqli $mysqli, string $filePath, string $dbName, stri
 }
 
 /**
- * Attempt to normalize DELIMITER usage to ';' so mysqli::multi_query can process:
- * - Detects lines like "DELIMITER $$" and "DELIMITER ;"
- * - Captures blocks until the custom delimiter appears on a line end
- * - Replaces block terminators with ';'
- *
- * Note: This is a best-effort parser. If your dump has exotic constructs, prefer CLI restore.
+ * Normalize DELIMITER blocks so every statement ends with ';' for multi_query().
+ * Handles common mysqldump patterns (procedures/triggers).
  */
 function normalize_delimiters(string $sql): string
 {
@@ -268,9 +361,8 @@ function normalize_delimiters(string $sql): string
     foreach ($lines as $rawLine) {
         $line = rtrim($rawLine, "\r\n");
 
-        // Check for DELIMITER directive
+        // DELIMITER $$  /  DELIMITER ;
         if (preg_match('/^\\s*DELIMITER\\s+(.+)\\s*$/i', $line, $m)) {
-            // flush current buffer
             if (trim($buffer) !== '') {
                 $out[] = $buffer;
                 $buffer = '';
@@ -280,21 +372,16 @@ function normalize_delimiters(string $sql): string
         }
 
         if ($delimiter === ';') {
-            // Normal mode
             $buffer .= $line . "\n";
-            // Split on ';' that terminate statements
             while (false !== ($pos = strpos($buffer, ';'))) {
                 $stmt = substr($buffer, 0, $pos + 1);
                 $out[] = $stmt;
                 $buffer = substr($buffer, $pos + 1);
             }
         } else {
-            // Custom delimiter mode: keep appending until line ends with delimiter
             $buffer .= $line . "\n";
-            // If buffer ends with the custom delimiter at end of a line
             $delimPattern = preg_quote($delimiter, '/');
             if (preg_match("/" . $delimPattern . "\\s*\\n$/", $buffer)) {
-                // Replace trailing custom delimiter with ';'
                 $stmt = preg_replace("/" . $delimPattern . "\\s*\\n$/", ";\n", $buffer);
                 $out[] = $stmt;
                 $buffer = '';
@@ -302,13 +389,5 @@ function normalize_delimiters(string $sql): string
         }
     }
 
-    // Append leftover
-    if (trim($buffer) !== '') {
-        // Ensure terminated
-        $out[] = rtrim($buffer) . (substr(rtrim($buffer), -1) === ';' ? "" : ";\n");
-    }
-
-    // Join statements
-    return implode("\n", $out);
+   return implode("\n", $out);
 }
-?>
