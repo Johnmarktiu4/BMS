@@ -364,11 +364,6 @@
                                 <div class="col-md-6">
                                     <label for="street" class="form-label">Street *</label>
                                     <select class="form-select" id="street" name="street" required>
-                                        <option value="">Select</option>
-                                        <option value="Reyes St.">Reyes St.</option>
-                                        <option value="Militar St.">Militar St.</option>
-                                        <option value="Tandang Sora St.">Tandang Sora St.</option>
-                                        <option value="Custodio St.">Custodio St.</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -682,10 +677,38 @@
                 $('#houseNumber').val('');
                 $('#street').val('');
             }
+            streetsDropdown();
         } else {
             $('#relationshipToHead').prop('required', true);
             controlsAddress.style.display = 'none';
         }
+    }
+
+    function streetsDropdown() {
+        const dropdown = document.getElementById('street');
+        const search = "Street Name";
+        $.ajax({
+            url: 'partials/blotter_api.php',
+            type: 'POST',
+            data: { search: search, action: 'fetch_dropdown_options' },
+            success: function(response) {
+                dropdown.options.length = 0; // Clear existing options
+                const option1 = document.createElement('option');
+                option1.value = "";
+                option1.textContent = "Select Street";
+                dropdown.appendChild(option1);
+                response.data.forEach(item => {
+                    const option = document.createElement('option');
+                    console.log(item.options);
+                    option.value = item.options;
+                    option.textContent = item.options;
+                    dropdown.appendChild(option);
+                });
+            },
+            error: function() {
+                console.error('Error fetching nature of complaints.');
+            }
+        });
     }
 
     function togglePwdFields() {

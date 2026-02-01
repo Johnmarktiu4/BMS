@@ -139,7 +139,9 @@
                                     <label for="category" class="form-label">Category *</label>
                                     <select class="form-select" id="category" name="category" required>
                                         <option value="" disabled selected>Select category</option>
-                                        <option value="Forgot Password">Forgot Password</option>
+                                        <option value="Forgot Password Category 1">Forgot Password Category 1</option>
+                                        <option value="Forgot Password Category 2">Forgot Password Category 2</option>
+                                        <option value="Forgot Password Category 3">Forgot Password Category 3</option>
                                         <option value="Nature of Complaints">Nature of Complaints</option>
                                         <option value="Street Name">Street Name</option>
                                     </select>

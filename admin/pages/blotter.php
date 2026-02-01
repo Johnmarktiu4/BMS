@@ -657,6 +657,19 @@
             }
         });
 
+        
+        const pad2 = n => String(n).padStart(2, '0');
+
+        function setTimeNow(input) {
+            const now = new Date();
+            const hh = pad2(now.getHours());
+            const mm = pad2(now.getMinutes());
+            // If you need seconds, also compute: const ss = pad2(now.getSeconds());
+            input.value = `${hh}:${mm}`;          // or `${hh}:${mm}:${ss}` if using seconds
+            console.log(input.value);
+        }
+    
+
         $('#complainant_file, #defendant_file').on('change', function() {
             const type = this.id.includes('complainant') ? 'complainant' : 'defendant';
             const file = this.files[0];
@@ -665,6 +678,7 @@
                 displayFile(file, type);
             }
         });
+
 
         const timeInput = document.getElementById('time_schedule_record');
         const timeInput2 = document.getElementById('time_schedule');
@@ -1164,6 +1178,7 @@ timeInput2.addEventListener('input', function () {
             `);
                 });
                 $('#recordHearingModal').modal('show');
+                setTimeNow(document.getElementById('record_hearing_time'));
             }, 'json');
         };
 
