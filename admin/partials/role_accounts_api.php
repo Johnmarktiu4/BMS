@@ -48,6 +48,9 @@ if ($action === 'add_account') {
     $username    = trim($_POST['username']);
     $password    = $_POST['password'];
     $status      = $_POST['status'] === 'Active' ? 'Active' : 'Inactive';
+    $q1          = trim($_POST['sec_q1']);
+    $q2          = trim($_POST['sec_q2']);
+    $q3          = trim($_POST['sec_q3']);
     $a1          = strtolower(trim($_POST['sec_a1']));
     $a2          = strtolower(trim($_POST['sec_a2']));
     $a3          = strtolower(trim($_POST['sec_a3']));
@@ -85,10 +88,6 @@ if ($action === 'add_account') {
     $stmt = $conn->prepare("INSERT INTO user_roles_official_accounts 
         (official_id, username, password, status, sec_q1, sec_a1, sec_q2, sec_a2, sec_q3, sec_a3)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-
-    $q1 = "What is your mother's maiden name?";
-    $q2 = "What was the name of your first pet?";
-    $q3 = "In what city were you born?";
 
     $stmt->bind_param(
         "isssssssss", 

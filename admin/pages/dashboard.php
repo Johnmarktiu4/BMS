@@ -61,6 +61,9 @@ $male_with_senior_query = $conn->query("
     WHERE ((YEAR(CURDATE()) - YEAR(date_of_birth)) - (RIGHT(CURDATE(), 5) < RIGHT(date_of_birth, 5))) >= 60 AND archived = 0 AND sex = 'Male'
 ");
 $male_with_senior = $male_with_senior_query ? $male_with_senior_query->fetch_row()[0] : 0;
+$unresolve_complaints = $conn->query("SELECT COUNT(*) FROM blotters WHERE status = 'Unresolved'")->fetch_row()[0];
+$unreturned_items = $conn->query("SELECT SUM(quantity) FROM inventory_transactions WHERE action_type = 'Borrow' AND returned_date IS NULL")->fetch_row()[0];
+$expiring_items = $conn->query("SELECT COUNT(*) FROM inventory_with_expiration WHERE status = 1 AND expiration_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)")->fetch_row()[0];
 $female_with_senior_query = $conn->query("
     SELECT COUNT(DISTINCT r1.id)
     FROM residents r1
@@ -94,6 +97,26 @@ if ($due_count > 0) {
             'id' => $item['id'],
             'message' => "<strong>{$item['item_name']}</strong> borrowed by <em>{$borrower_name}</em> — $status",
             'date' => $item['return_date']
+        ];
+    }
+}
+$notifications2 = [];
+$due_hearings_query = $conn->query("
+    SELECT DISTINCT (b.id), b.nature_of_complaint, bh.hearing_date, DATEDIFF(bh.hearing_date, CURDATE()) AS days_left
+    FROM blotters b
+    INNER JOIN blotter_hearings bh ON b.id = bh.blotter_id
+    WHERE bh.hearing_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 DAY)
+    ORDER BY bh.hearing_date desc
+");
+$due_hearing_count = $due_hearings_query->num_rows;
+if ($due_hearing_count > 0) {
+    while ($hearing = $due_hearings_query->fetch_assoc()) {
+        $days = $hearing['days_left'];
+        $status = $days == 0 ? "HEARING TODAY" : ($days == 1 ? "HEARING TOMORROW" : "HEARING IN $days DAYS");
+        $notifications[] = [
+            'id' => $hearing['id'],
+            'message' => "<strong>{$hearing['nature_of_complaint']}</strong> — $status",
+            'date' => $hearing['hearing_date']
         ];
     }
 }
@@ -254,25 +277,25 @@ closeDBConnection($conn);
                 <button class="btn btn-outline-success btn-lg rounded-pill shadow-sm d-flex align-items-center gap-2"
                         type="button" id="notificationBtn" data-bs-toggle="dropdown">
                     <i class="bi bi-bell-fill fs-4"></i>
-                    <?php if ($due_count > 0): ?>
+                    <?php if ($due_count > 0 || $due_hearing_count > 0): ?>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.65rem;">
-                            <?php echo $due_count; ?>
+                            <?php echo $due_count + $due_hearing_count; ?>
                             <span class="visually-hidden">due items</span>
                         </span>
                     <?php endif; ?>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-0" style="width: 380px; max-height: 80vh; overflow: hidden;">
                     <div class="bg-success text-white px-4 py-3 d-flex align-items-center justify-content-between">
-                        <h6 class="mb-0 fw-bold">Due for Return (<?php echo $due_count; ?>)</h6>
+                        <h6 class="mb-0 fw-bold">Due for Return (<?php echo $due_count; ?>) | Hearing (<?php echo $due_hearing_count; ?>)</h6>
                         <?php if ($due_count > 0): ?>
-                            <small class="opacity-90">Items returning soon</small>
+                            <small class="opacity-90">Items returning soon | Hearing soon</small>
                         <?php endif; ?>
                         
                     </div>
                     <?php if ($due_count > 0): ?>
                         <div class="list-group list-group-flush" style="max-height: 60vh; overflow-y: auto;">
                             <?php foreach ($notifications as $notif): ?>
-                                <a href="?page=borrowed" class="list-group-item list-group-item-action px-4 py-3 border-0">
+                                <a href="#" class="list-group-item list-group-item-action px-4 py-3 border-0">
                                     <div class="d-flex w-100 justify-content-between align-items-start">
                                         <div class="me-3">
                                             <i class="bi bi-box-seam text-warning fs-5"></i>
@@ -309,6 +332,48 @@ closeDBConnection($conn);
                             <i class="bi bi-check-circle-fill fs-1 text-success mb-3 d-block"></i>
                             <h6>No items due soon</h6>
                             <small>Everything is returned on time!</small>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($due_hearing_count > 0): ?>
+                        <div class="list-group list-group-flush" style="max-height: 60vh; overflow-y: auto;">
+                            <?php foreach ($notifications2 as $notif): ?>
+                                <a href="#" class="list-group-item list-group-item-action px-4 py-3 border-0">
+                                    <div class="d-flex w-100 justify-content-between align-items-start">
+                                        <div class="me-3">
+                                            <i class="bi bi-gavel text-primary fs-5"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold text-dark" style="font-size:0.95rem;">
+                                                <?php echo $notif['message']; ?>
+                                            </div>
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="bi bi-calendar-event me-1"></i>
+                                                <?php echo date('M j, Y', strtotime($notif['date'])); ?>
+                                            </small>
+                                        </div>
+                                        <?php
+                                        $daysLeft = (strtotime($notif['date']) - time()) / 86400;
+                                        if ($daysLeft == 0): ?>
+                                            <span class="badge bg-danger">Today</span>
+                                        <?php elseif ($daysLeft == 1): ?>
+                                            <span class="badge bg-warning text-dark">Tomorrow</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary"><?php echo round($daysLeft); ?> days</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="p-3 border-top bg-light">
+                            <a href="?page=blotter" class="btn btn-success w-100">
+                                Go to Complaints
+                            </a>
+                                        </div>
+                        <?php else: ?>
+                        <div class="p-5 text-center text-muted">
+                            <i class="bi bi-check-circle-fill fs-1 text-success mb-3 d-block"></i>
+                            <h6>No hearings for the next 3 days</h6>
+                            <small>All hearings are scheduled properly!</small>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -364,10 +429,11 @@ closeDBConnection($conn);
             <br>
             <div class="card small-household-card">
                 <i class="bi bi-exclamation-triangle-fill main-icon"></i>
-                <div class="title mt-3">Unsettled Cases<br>&<br>Unreturned Items</div>
+                <div class="title mt-3">Unsettled Cases|Unreturned Items|Expiring item</div>
                 <div class="info-box">
-                    <div class="info-row"><span>Unsettled Cases</span><strong><?php echo number_format($households_with_pwd); ?></strong></div>
-                    <div class="info-row"><span>Unreturned Items</span><strong><?php echo number_format($households_with_senior); ?></strong></div>
+                    <div class="info-row"><a onclick="loadBlotterList()" style="cursor: pointer;"><span>Unsettled Cases</span></a><strong><?php echo number_format($unresolve_complaints); ?></strong></div>
+                    <div class="info-row"><a onclick="loadUnreturnedItemsList()" style="cursor: pointer;"><span>Unreturned Items</span></a><strong><?php echo number_format($unreturned_items); ?></strong></div>
+                    <div class="info-row"><a onclick="loadExpiringItem()" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#expiringModal"><span>Expiring Items</span></a><strong><?php echo number_format($expiring_items); ?></strong></div>
                 </div>
             </div>
         </div>
@@ -375,6 +441,22 @@ closeDBConnection($conn);
             <div class="card chart-card">
                 <h5 class="text-success mb-4">System Overview</h5>
                 <canvas id="overviewChart" style="cursor:pointer;"></canvas>
+            </div>
+            <br>
+             <div class="card chart-card">
+                <h5 class="text-success mb-4">Critical Items</h5>
+                <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0" id="criticalItemsTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Item Name</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
             </div>
         </div>
     </div>
@@ -428,6 +510,40 @@ closeDBConnection($conn);
             </div>
         </div>
     </div>
+
+
+        <!-- Resident Modal -->
+    <div class="modal fade" id="expiringModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-3 shadow-lg">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5><i class="fas fa-plus-circle me-2"></i>Expiring Items List</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0" id="expiringModalTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Item Name</th>
+                                    <th>Expiration Date</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div><small class="text-muted" id="paginationInfo"></small></div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="paginationLinks"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
 </div>
 
@@ -464,6 +580,67 @@ closeDBConnection($conn);
             }
         });
     }
+    loadCriticalItems();
+
+    function loadCriticalItems() {
+        $.ajax({
+            url: 'partials/inventory_management_api.php',
+            type: 'POST',
+            data: {
+                action: 'get_critical_items'
+            },
+            dataType: 'json',
+            success: function(response) {
+                let tbody = '';
+                if (response.items.length !== 0) {
+                    response.items.forEach((item, index) => {
+                        tbody += `
+                            <tr>
+                                <td><strong>${item.id}</strong></td>
+                                <td>${item.item_name || '—'}</td>
+                                <td>${item.current_stock || '0'}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody += '<tr><td colspan="3" class="text-center py-5 text-muted">No critical items found.</td></tr>';
+                }
+                $('#criticalItemsTable tbody').html(tbody);
+            }
+        });
+    }
+
+    function loadExpiringItem() {
+        $.ajax({
+            url: 'partials/inventory_management_api.php',
+            type: 'POST',
+            data: {
+                action: 'get_expiring_items'
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.items.length !== 0) {
+                    console.log(response.items);
+                    updateExpiringItemsTable(response.items);
+                }
+                else{
+                    console.log('else');
+                    updateExpiringItemsTable([]);
+                }
+            }
+        });
+    }
+
+    function loadBlotterList() {
+        window.location.href = 'layout.php?page=blotter';
+    }
+
+    function loadUnreturnedItemsList() {
+        window.location.href = 'layout.php?page=borrowed';
+    }
+    function loadExpiringItemsList() {
+        window.location.href = 'layout.php?page=manage_inventory';
+    }
 
     function updateResidentListTable(data) {
         let tbody = '';
@@ -488,6 +665,28 @@ closeDBConnection($conn);
             `;
         });
         $('#residentModalTable tbody').html(tbody);
+    }
+
+    function updateExpiringItemsTable(data) {
+        let tbody = '';
+        console.log(data);
+        if (data.length === 0) {
+            tbody += '<tr><td colspan="7" class="text-center py-5 text-muted">No expiring items found.</td></tr>';
+            $('#expiringModalTable tbody').html(tbody);
+            return;
+        }
+        console.log(data);
+        data.forEach(item => {
+            tbody += `
+                <tr>
+                    <td><strong>${item.inventory_id}</strong></td>
+                    <td>${item.item_name || '—'}</td>
+                    <td>${item.expiration_date}</td>
+                    <td>${item.quantity || '0'}</td>
+                </tr>
+            `;
+        });
+        $('#expiringModalTable tbody').html(tbody);
     }
 
 document.addEventListener('DOMContentLoaded', function() {

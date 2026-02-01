@@ -104,17 +104,31 @@ require_once 'partials/db_conn.php';
                         <hr class="my-4">
                         <h5 class="mb-3 text-primary">Security Questions (Required for Password Recovery)</h5>
                         <p class="text-muted small">These will be used to recover password if forgotten.</p>
-
                         <div class="mb-3">
-                            <label class="form-label fw-bold">1. What is your mother's maiden name? <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold">Question 1 <span class="text-danger">*</span></label>
+                            <select name="forgotPassword1" id="forgotPassword1" class="form-select" required onchange="forgotPasswordValidation()">    
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Answer 1 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="sec_a1" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">2. What was the name of your first pet? <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold">Question 2 <span class="text-danger">*</span></label>
+                            <select name="forgotPassword2" id="forgotPassword2" class="form-select" required onchange="forgotPasswordValidation()">    
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Answer 2 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="sec_a2" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">3. In what city were you born? <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold">Question 3 <span class="text-danger">*</span></label>
+                            <select name="forgotPassword3" id="forgotPassword3" class="form-select" required onchange="forgotPasswordValidation()">    
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Answer 3 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="sec_a3" required>
                         </div>
                     </div>
@@ -152,6 +166,110 @@ function loadOfficials() {
         }
     }, 'json');
 }
+
+    function forgotPasswordDropdown1() {
+        const dropdown = document.getElementById('forgotPassword1');
+        const search = "Forgot Password";
+        $.ajax({
+            url: 'partials/blotter_api.php',
+            type: 'POST',
+            data: { search: search, action: 'fetch_dropdown_options' },
+            success: function(response) {
+                dropdown.options.length = 0; // Clear existing options
+                const option1 = document.createElement('option');
+                option1.value = "";
+                option1.textContent = "Select Security Question";
+                dropdown.appendChild(option1);
+                response.data.forEach(item => {
+                    const option = document.createElement('option');
+                    console.log(item.options);
+                    option.value = item.options;
+                    option.textContent = item.options;
+                    dropdown.appendChild(option);
+                });
+            },
+            error: function() {
+                console.error('Error fetching nature of complaints.');
+            }
+        });
+    }
+
+    function forgotPasswordDropdown2() {
+        const dropdown = document.getElementById('forgotPassword2');
+        const search = "Forgot Password";
+        $.ajax({
+            url: 'partials/blotter_api.php',
+            type: 'POST',
+            data: { search: search, action: 'fetch_dropdown_options' },
+            success: function(response) {
+                dropdown.options.length = 0; // Clear existing options
+                const option1 = document.createElement('option');
+                option1.value = "";
+                option1.textContent = "Select Security Question";
+                dropdown.appendChild(option1);
+                response.data.forEach(item => {
+                    const option = document.createElement('option');
+                    console.log(item.options);
+                    option.value = item.options;
+                    option.textContent = item.options;
+                    dropdown.appendChild(option);
+                });
+            },
+            error: function() {
+                console.error('Error fetching nature of complaints.');
+            }
+        });
+    }
+
+    function forgotPasswordDropdown3() {
+        const dropdown = document.getElementById('forgotPassword3');
+        const search = "Forgot Password";
+        $.ajax({
+            url: 'partials/blotter_api.php',
+            type: 'POST',
+            data: { search: search, action: 'fetch_dropdown_options' },
+            success: function(response) {
+                dropdown.options.length = 0; // Clear existing options
+                const option1 = document.createElement('option');
+                option1.value = "";
+                option1.textContent = "Select Security Question";
+                dropdown.appendChild(option1);
+                response.data.forEach(item => {
+                    const option = document.createElement('option');
+                    console.log(item.options);
+                    option.value = item.options;
+                    option.textContent = item.options;
+                    dropdown.appendChild(option);
+                });
+            },
+            error: function() {
+                console.error('Error fetching nature of complaints.');
+            }
+        });
+    }
+
+    function forgotPasswordValidation() {
+        const q1 = document.getElementById('forgotPassword1').value;
+        const q2 = document.getElementById('forgotPassword2').value;
+        const q3 = document.getElementById('forgotPassword3').value;
+
+        if (q1 && (q1 === q2 || q1 === q3)) {
+            alert('Question 1 must be different from Question 2 and Question 3.');
+            document.getElementById('forgotPassword1').value = "";
+            return false;
+        }
+        if (q2 && (q2 === q1 || q2 === q3)) {
+            alert('Question 2 must be different from Question 1 and Question 3.');
+            document.getElementById('forgotPassword2').value = "";
+            return false;
+        }
+        if (q3 && (q3 === q1 || q3 === q2)) {
+            alert('Question 3 must be different from Question 1 and Question 2.');
+            document.getElementById('forgotPassword3').value = "";
+            return false;
+        }
+        return true;
+    }
 
 function loadAccounts() {
     $.post('partials/role_accounts_api.php', { action: 'fetch_accounts' }, function(r) {
@@ -202,6 +320,9 @@ function openAddModal() {
     populateOfficialDropdown('');
     $('#updateSec').css('display', 'block');
     $('#updatePas').css('display', 'block');
+    forgotPasswordDropdown1();
+    forgotPasswordDropdown2();
+    forgotPasswordDropdown3();
     new bootstrap.Modal('#accountModal').show();
 }
 
@@ -274,6 +395,9 @@ function saveAccount() {
     const a1 = $('#sec_a1').val().trim().toLowerCase();
     const a2 = $('#sec_a2').val().trim().toLowerCase();
     const a3 = $('#sec_a3').val().trim().toLowerCase();
+    const q1 = $('#forgotPassword1').val().trim();
+    const q2 = $('#forgotPassword2').val().trim();
+    const q3 = $('#forgotPassword3').val().trim();
     let data = [];
     if (!official_id) return alert('Please select an official');
     if (!username) return alert('Username is required');
@@ -288,6 +412,9 @@ function saveAccount() {
             username: username,
             password: password,
             status: status,
+            sec_q1: q1,
+            sec_q2: q2,
+            sec_q3: q3,
             sec_a1: a1,
             sec_a2: a2,
             sec_a3: a3

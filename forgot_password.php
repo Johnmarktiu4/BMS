@@ -195,10 +195,6 @@ closeDBConnection($conn);
                     <div class="mb-3">
                         <label class="form-label fw-bold">Security Question</label>
                         <select class="form-select" id="question">
-                            <option value="">Choose a security question...</option>
-                            <option value="q1">What is your mother's maiden name?</option>
-                            <option value="q2">What was the name of your first pet?</option>
-                            <option value="q3">In what city were you born?</option>
                         </select>
                     </div>
 
@@ -250,6 +246,35 @@ closeDBConnection($conn);
             $('body').append(alert);
             setTimeout(() => alert.alert('close'), 6000);
         }
+
+        function forgotPasswordDropdown() {
+            const dropdown = document.getElementById('question');
+            const search = "Forgot Password";
+            $.ajax({
+                url: 'admin/partials/blotter_api.php',
+                type: 'POST',
+                data: { search: search, action: 'fetch_dropdown_options' },
+                success: function(response) {
+                    dropdown.options.length = 0; // Clear existing options
+                    const option1 = document.createElement('option');
+                    option1.value = "";
+                    option1.textContent = "Select Security Question";
+                    dropdown.appendChild(option1);
+                    response.data.forEach(item => {
+                        const option = document.createElement('option');
+                        console.log(item.options);
+                        option.value = item.options;
+                        option.textContent = item.options;
+                        dropdown.appendChild(option);
+                    });
+                },
+                error: function() {
+                    console.error('Error fetching nature of complaints.');
+                }
+            });
+        }
+        
+        forgotPasswordDropdown();
 
         $('#verifyBtn').on('click', function() {
             const username = $('#username').val().trim();

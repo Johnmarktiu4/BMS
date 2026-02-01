@@ -909,6 +909,33 @@ elseif ($action === "get_quantity_by_expiration") {
     }
     $response = ["status"=> "success","data"=> $items];
 }
+elseif ($action === "get_expiring_items") {
+    $today = date('Y-m-d');
+    $threshold_date = date('Y-m-d', strtotime('+30 days'));
+    $sql = "SELECT i.id AS inventory_id, i.item_name, iwe.expiration_date, iwe.quantity
+            FROM inventory_with_expiration iwe
+            JOIN inventory i ON iwe.inventory_id = i.id
+            WHERE iwe.status = 1 AND iwe.expiration_date BETWEEN '$today' AND '$threshold_date'
+            ORDER BY iwe.expiration_date ASC";
+    $result = $conn->query($sql);
+    $items = [];
+    while ($row = $result->fetch_assoc()) {
+        $items[] = $row;
+    }
+    $response = ["status"=> "success","items"=> $items];
+}
+elseif ($action === "get_critical_items") {
+    $sql = "SELECT id, item_name, current_stock
+            FROM inventory
+            WHERE archived = 0 AND current_stock <= 10
+            ORDER BY current_stock ASC";
+    $result = $conn->query($sql);
+    $items = [];
+    while ($row = $result->fetch_assoc()) {
+        $items[] = $row;
+    }
+    $response = ["status"=> "success","items"=> $items];
+}
 /* ===============================================
    DEFAULT
    =============================================== */
