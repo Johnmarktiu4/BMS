@@ -142,6 +142,32 @@ if ($action === 'delete_account') {
     exit;
 }
 
+if ($action === 'verify_username_forgot_password') {
+    $username = trim($_POST['username']);
+    if (empty($username)) {
+        echo json_encode(['status' => 'error', 'message' => 'Username is required']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT ua.id, ua.username,
+                   o.full_name, o.position, o.id AS official_id,
+                   ua.sec_q1, ua.sec_q2, ua.sec_q3
+            FROM user_roles_official_accounts ua
+            JOIN officials o ON ua.official_id = o.id
+            WHERE o.archived = 0 AND ua.username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows === 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Username not found']);
+        exit;
+    }
+    $data = $result->fetch_assoc();
+    echo json_encode(['status' => 'success', 'data' => $data]);
+    $stmt->close();
+    exit;
+}
+
 echo json_encode($response);
 $conn->close();
 ?>

@@ -17,42 +17,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        $validQuestions = ['q1', 'q2', 'q3'];
-        if (!in_array($question, $validQuestions)) {
-            echo json_encode(['status' => 'error', 'message' => 'Invalid question']);
-            exit;
-        }
+        $stmt1 = $conn->prepare("Select user_roles_official_accounts.id, full_name FROM user_roles_official_accounts
+        INNER JOIN officials ON user_roles_official_accounts.official_id = officials.id 
+        WHERE username = ? AND ((sec_q1 = ? AND sec_a1 = ?) OR (sec_q2 = ? AND sec_a2 = ?) OR (sec_q3 = ? AND sec_a3 = ?))");
+        $stmt1->bind_param('sssssss', $username, $question, $answer, $question, $answer, $question, $answer);
+        $stmt1->execute();
+        $result1 = $stmt1->get_result();
 
-        $stmt = $conn->prepare("
-            SELECT ua.id, o.full_name, 
-                   ua.sec_a1, ua.sec_a2, ua.sec_a3
-            FROM user_roles_official_accounts ua
-            JOIN officials o ON ua.official_id = o.id
-            WHERE ua.username = ? AND o.archived = 0
-            LIMIT 1
-        ");
-        $stmt->bind_param('s', $username);
-        $stmt->execute();
-        $result = $stmt->get_result();
 
-        if ($result->num_rows === 1) {
-            $user = $result->fetch_assoc();
 
-            $storedAnswer = $user['sec_a' . substr($question, 1)]; // sec_a1, sec_a2, sec_a3
+        if ($result1->num_rows === 1) {
+            $user = $result1->fetch_assoc();
 
-            if ($storedAnswer === $answer) {
+           if ($user) {
                 $_SESSION['reset_user_id'] = $user['id'];
                 echo json_encode([
                     'status' => 'success',
                     'full_name' => $user['full_name']
                 ]);
             } else {
-                echo json_encode(['status' => 'error', 'message' => 'Incorrect answer. Please try again.']);
+                echo json_encode(['status' => 'error', 'message' => 'Incorrect question or answer. Please try again.']);
             }
         } else {
-            echo json_encode(['status' => 'error', 'message' => 'Username not found']);
+            echo json_encode(['status' => 'error', 'message' => 'Incorrect question or answer. Please try again.']);
         }
-        $stmt->close();
+        $stmt1->close();
         exit;
     }
 
@@ -191,19 +180,24 @@ closeDBConnection($conn);
                         <label class="form-label fw-bold">Username</label>
                         <input type="text" class="form-control" id="username" placeholder="Enter your username" required autocomplete="username">
                     </div>
+                    
+                    <button type="button" class="btn btn-primary" id="verifyUsernameBtn">
+                        <span class="loading-spinner" id="spinner1"></span>
+                        Verify & Continue
+                    </button>
 
-                    <div class="mb-3">
+                    <div class="mb-3" id="forHide1" style="display: none;">
                         <label class="form-label fw-bold">Security Question</label>
                         <select class="form-select" id="question">
                         </select>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-4" id="forHide2" style="display: none;">
                         <label class="form-label fw-bold">Your Answer</label>
                         <input type="text" class="form-control" id="answer" placeholder="Enter your answer" autocomplete="off" required>
                     </div>
 
-                    <button type="button" class="btn btn-primary" id="verifyBtn">
+                    <button type="button" class="btn btn-primary" id="verifyBtn" style="display: none;">
                         <span class="loading-spinner" id="spinner1"></span>
                         Verify & Continue
                     </button>
@@ -275,6 +269,45 @@ closeDBConnection($conn);
         }
         
         forgotPasswordDropdown();
+
+        $('#verifyUsernameBtn').on('click', function() {
+            const username = $('#username').val().trim();
+
+            if (!username) return showAlert('danger', 'Please enter your username');
+
+            const btn = $(this);
+            const spinner = $('#spinner1');
+            spinner.show();
+            btn.prop('disabled', true);
+            $.ajax({
+                url: 'admin/partials/role_accounts_api.php',
+                type: 'POST',
+                data: {
+                    username: username,
+                    action: 'verify_username_forgot_password'
+                },
+                dataType: 'json',
+                success: function(r) {
+                    spinner.hide();
+                    btn.prop('disabled', false);
+
+                    if (r.status === 'success') {
+                        $('#forHide1').show();
+                        $('#forHide2').show();
+                        $('#verifyBtn').show();
+                        $('#verifyUsernameBtn').hide();
+                        showAlert('success', 'Username found! Please answer a security question.');
+                    } else {
+                        showAlert('danger', r.message);
+                    }
+                },
+                error: function() {
+                    spinner.hide();
+                    btn.prop('disabled', false);
+                    showAlert('danger', 'Connection error. Please try again.');
+                }
+            });
+        });
 
         $('#verifyBtn').on('click', function() {
             const username = $('#username').val().trim();
