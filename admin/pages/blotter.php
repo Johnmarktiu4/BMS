@@ -539,7 +539,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Hearing Time *</label>
-                                <input type="time" class="form-control form-control-lg" id="record_hearing_time" required>
+                                <input type="time" class="form-control form-control-lg" id="record_hearing_time" min="06:00" max="18:00" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">Barangay Incharge *</label>
@@ -682,6 +682,7 @@
 
         const timeInput = document.getElementById('time_schedule_record');
         const timeInput2 = document.getElementById('time_schedule');
+        const timeInput3 = document.getElementById('record_hearing_time');
 
 
         timeInput.addEventListener('input', function () {
@@ -707,6 +708,15 @@ timeInput2.addEventListener('input', function () {
         this.value = "";
     } else {
         errorMsg.textContent = "";
+    }
+});
+
+timeInput3.addEventListener('input', function () {
+    const min = "07:00";
+    const max = "19:00";
+    if (this.value < min || this.value > max) {
+        alert("Please select a time between 7:00 AM and 5:00 PM.");
+        this.value = "";
     }
 });
 
