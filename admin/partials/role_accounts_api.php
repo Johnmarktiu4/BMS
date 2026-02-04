@@ -28,7 +28,7 @@ if ($action === 'fetch_officials') {
 if ($action === 'fetch_accounts') {
     $sql = "SELECT ua.id, ua.username, ua.status,
                    o.full_name, o.position, o.id AS official_id,
-                   ua.sec_a1, ua.sec_a2, ua.sec_a3
+                   ua.sec_a1, ua.sec_a2, ua.sec_a3, ua.sec_q1, ua.sec_q2, ua.sec_q3
             FROM user_roles_official_accounts ua
             JOIN officials o ON ua.official_id = o.id
             WHERE o.archived = 0

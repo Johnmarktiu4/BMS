@@ -342,6 +342,12 @@ function editAccount(id) {
     $('#sec_a1').val(acc.sec_a1 || '');
     $('#sec_a2').val(acc.sec_a2 || '');
     $('#sec_a3').val(acc.sec_a3 || '');
+    forgotPasswordDropdown1();
+    forgotPasswordDropdown2();
+    forgotPasswordDropdown3();
+    $('#forgotPassword1').val(acc.sec_q1 || '');
+    $('#forgotPassword2').val(acc.sec_q2 || '');
+    $('#forgotPassword3').val(acc.sec_q3 || '');
     $('#password').prop('required', false).val('');
     $('#officialDropdown').hide();
     $('#updateSec').css('display', 'none');
