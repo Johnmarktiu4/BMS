@@ -7,6 +7,28 @@ require_once __DIR__ . '/tcpdf/tcpdf.php';
 $conn = getDBConnection();
 if (!$conn) die('Database connection failed.');
 
+$where = 'WHERE i.archived = 0';
+
+$category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+$stockStatus = filter_input(INPUT_GET, 'stock_status', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+$minStock = filter_input(INPUT_GET, 'min_stock', FILTER_SANITIZE_NUMBER_INT);
+$maxStock = filter_input(INPUT_GET, 'max_stock', FILTER_SANITIZE_NUMBER_INT);
+if ($stockStatus === 'Critical') {
+    $where .= " AND i.current_stock <= 10";
+}
+if ($stockStatus === 'Normal') {
+    $where .= " AND i.current_stock > 10";
+}
+if ($category) {
+    $where .= " AND i.item_category LIKE '%" . $conn->real_escape_string($category) . "%'";
+}
+if ($minStock !== '' && $minStock !== false && is_numeric($minStock)) {
+    $where .= " AND i.current_stock >= " . (int)$minStock;
+}
+if ($maxStock !== '' && $maxStock !== false && is_numeric($maxStock)) {
+    $where .= " AND i.current_stock <= " . (int)$maxStock;
+}
+
 // === FETCH INVENTORY WITH PROPER VALUE CALCULATION ===
 $sql = "
     SELECT
@@ -22,7 +44,7 @@ $sql = "
         COALESCE(m.value, '0') AS unit_value
     FROM inventory i
     LEFT JOIN item_meta m ON i.id = m.inventory_id AND m.meta_key = 'declared_value'
-    WHERE i.archived = 0
+    $where
     ORDER BY i.item_name
 ";
 $result = $conn->query($sql);

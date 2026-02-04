@@ -24,7 +24,7 @@ require_once 'partials/db_conn.php';
                     <button class="btn btn-success btn-md action-btn" data-bs-toggle="modal" data-bs-target="#addItemModal">
                         <i class="fas fa-box me-2"></i>Add Item
                     </button>
-                    <button class="btn btn-success btn-md action-btn" onclick="window.open('partials/generate_inventory_report.php', '_blank')">
+                    <button class="btn btn-success btn-md action-btn" id="printBtn">
                         <i class="fas fa-file-pdf me-2"></i>Print
                     </button>
                 </div>
@@ -883,6 +883,31 @@ function renderSelectedItems() {
     inputElement2.value = selectedItems[0].name;
     isWithExpiration();
 }
+
+
+document.getElementById('printBtn').addEventListener('click', () => {
+    const category = document.getElementById('invFilterCategory').value || '';
+    const stockStatus = document.getElementById('invFilterStockStatus').value || '';
+    const stockMin = document.getElementById('invFilterStockMin').value || '';
+    const stockMax = document.getElementById('invFilterStockMax').value || '';
+
+    console.log('Generating report with filters:', {
+      category,
+      stockStatus,
+      stockMin,
+      stockMax
+    });
+
+    const qs = new URLSearchParams({
+      category,
+      stock_status: stockStatus,
+      min_stock: stockMin,
+      max_stock: stockMax
+    }).toString();
+
+    window.open(`partials/generate_inventory_report.php?${qs}`, '_blank');
+  });
+
 
 // Item search
 $('#itemSearchInput2').on('input', debounce(function() {
